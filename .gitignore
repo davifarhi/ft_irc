@@ -30,3 +30,19 @@
 *.exe
 *.out
 *.app
+
+# other
+*.swp
+*.swo
+*.dylib
+*.DS_Store
+*.dSYM
+.lvimrc
+vgcore.*
+analysis.txt
+gmon.out
+compile_commands.json
+.cache
+
+# Project executable
+ircserv
