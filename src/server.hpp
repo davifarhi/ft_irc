@@ -17,10 +17,7 @@
 
 
 class Server
-{
-//	typedef std::vector<pollfd>::iterator       pfd_it;
-//	typedef std::map<int, Client*>::iterator	client_it;	
-	
+{		
 	public:
 		Server(const std::string &port, const std::string &pass);
 		~Server();
