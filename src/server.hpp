@@ -17,7 +17,7 @@
 
 
 class Server
-{		
+{	
 	public:
 		Server(const std::string &port, const std::string &pass);
 		~Server();
@@ -31,6 +31,7 @@ class Server
 
 		int	create_socket();
 		void	client_connect();
+		void	client_disconnecte(int fd);
 		
 		std::vector<pollfd>     _pfds;
 		std::map<int, Client*>	_client;

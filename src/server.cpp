@@ -16,16 +16,53 @@ void	Server::start()
 	
 	while(1)
 	{
+		int p = poll(_pfds.begin().base(), _pfds.size(), 0);
+		if (p == -1)
+		{
+			std::cout << "erreur poll\n";
+		}
 		for (std::vector<pollfd>::iterator it = _pfds.begin(); it != _pfds.end(); it++)
 		{
-			if (it->fd == _socket)
+			if ((it->revents &POLLHUP) == POLLHUP)
 			{
-				client_connect();
+				client_disconnecte(it->fd);
 				break;
+			}
+			if ((it->revents &POLLIN) == POLLIN)
+			{
+				if (it->fd == _socket)
+				{
+					client_connect();
+					break;
+				}
 			}
 //			client_messa(it->fd);
 		}
 	}
+}
+
+void	Server::client_disconnecte(int fd)
+{
+	//trouver le client et le delet
+	Client* client = _client.at(fd);
+
+	
+	std::cout << "client is disconnected " << client->get_hostname().c_str() << " " << client->get_port() << "\n";
+	_client.erase(fd);
+
+	// trouver le client dans le poll et le delet a son tour sinon gros problem de boucle infinie	
+	for (std::vector<pollfd>::iterator it = _pfds.begin(); it != _pfds.end(); it++)
+	{
+		if (it->fd == fd)
+		{
+			_pfds.erase(it);
+			close(fd);
+			break;
+		}
+	}
+
+	// delete le client vue qu'on la new
+	delete client;
 }
 
 void	Server::client_connect()
@@ -69,8 +106,6 @@ int	Server::create_socket()
 		return (1);
 	}
 	//attention peut etre que la socket sera bloquante je sais pas ce que c'est
-
-//	bzero((char*) &address, sizeof(address));	
 	
 	address.sin_family = AF_INET;
 	address.sin_addr.s_addr = INADDR_ANY;
