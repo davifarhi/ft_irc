@@ -22,4 +22,6 @@ int main( int ac, char **av )
 		cerr << "The server has failed to start\n";
 		return 1;
 	}
+	serv.run();
+	return 0;
 }

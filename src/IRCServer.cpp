@@ -23,6 +23,21 @@ IRCServer::~IRCServer( void )
 	shutdown( sockfd, SHUT_RDWR );
 }
 
+void IRCServer::run( void )
+{
+	bool running = true;
+	pfds.push_back(pfd_construct(sockfd, POLLIN | POLLPRI, 0));
+	while (running)
+	{
+		int p;
+		if ((p = poll( &(*pfds.begin()), pfds.size(), 0 )) == -1)
+			cerr << "IRCServer::run: poll() error: " << strerror(errno) << endl;
+		if (!p)
+			continue;
+		cout << "ready to do stuff\n";
+	}
+}
+
 bool IRCServer::get_has_started( void ) const
 {
 	return this->has_started;
@@ -40,12 +55,12 @@ bool IRCServer::create_socket( void )
 	//if needed setsockopt here
 
 	{
-		struct sockaddr_in addr;
+		sockaddr_in addr;
 		addr.sin_family = AF_INET;
 		addr.sin_addr.s_addr = INADDR_ANY;
 		addr.sin_port = htons(this->port);
 
-		if (bind( sockfd, (struct sockaddr*) &addr, sizeof(addr) ) == -1)
+		if (bind( sockfd, (sockaddr*) &addr, sizeof(addr) ) == -1)
 		{
 			cerr << "IRCServer::create_socket: bind() error: " << strerror(errno) << endl;
 			return true;
@@ -61,3 +76,8 @@ bool IRCServer::create_socket( void )
 	return false;
 }
 
+pollfd IRCServer::pfd_construct( int fd, short events, short revents ) const
+{
+	pollfd pfd = {fd, events, revents};
+	return pfd;
+}
