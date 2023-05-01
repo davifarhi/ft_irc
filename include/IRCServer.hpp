@@ -14,6 +14,7 @@
 #include <cstring>
 #include <vector>
 #include <set>
+#include <algorithm>
 
 #include "Client.hpp"
 #include "debug.hpp"
@@ -47,7 +48,7 @@ class IRCServer
 		bool create_socket( void );
 		pollfd pfd_construct( int, short, short ) const;
 		void client_connect( void );
-		void client_disconnect( int fd );
+		vector<pollfd>::iterator client_disconnect( int fd );
 };
 
 #endif /* end of include guard: IRCSERVER_H */

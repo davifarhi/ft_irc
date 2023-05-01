@@ -39,6 +39,13 @@ void IRCServer::run( void )
 		{
 			client_connect();
 		}
+		for (vector<pollfd>::iterator it = pfds.begin(); it != pfds.end(); it++)
+		{
+			if (it->revents &POLLHUP)
+			{
+				it = --client_disconnect(it->fd);
+			}
+		}
 	}
 }
 
@@ -86,6 +93,8 @@ pollfd IRCServer::pfd_construct( int fd, short events, short revents ) const
 	return pfd;
 }
 
+bool operator==( const pollfd& lhs, const Client& rhs ) { return lhs.fd == rhs.fd; }
+
 void IRCServer::client_connect( void )
 {
 	sockaddr_in addr;
@@ -113,8 +122,18 @@ void IRCServer::client_connect( void )
 	}
 }
 
-void IRCServer::client_disconnect( int fd )
+vector<pollfd>::iterator IRCServer::client_disconnect( int fd )
 {
-	(void) fd;
-	//TODO
+	{
+		set<Client>::iterator client = clients.find(fd);
+		if (DEBUG_CLIENT_CONNECTION)
+			cout << "client client disconnected: " << *client << endl;
+		clients.erase(client);
+	}
+	vector<pollfd>::iterator client = std::find( pfds.begin(), pfds.end(), Client(fd) );
+	if (client == pfds.end())
+	{
+		cerr << "IRCServer::client_disconnect: error client missing in pollfd vector\n";
+	}
+	return pfds.erase(client);
 }
