@@ -34,7 +34,11 @@ void IRCServer::run( void )
 			cerr << "IRCServer::run: poll() error: " << strerror(errno) << endl;
 		if (!p)
 			continue;
-		cout << "ready to do stuff\n";
+
+		if (pfds.begin()->revents &POLLIN)
+		{
+			client_connect();
+		}
 	}
 }
 
@@ -80,4 +84,37 @@ pollfd IRCServer::pfd_construct( int fd, short events, short revents ) const
 {
 	pollfd pfd = {fd, events, revents};
 	return pfd;
+}
+
+void IRCServer::client_connect( void )
+{
+	sockaddr_in addr;
+	socklen_t addrlen = sizeof(addr);
+	pfds.push_back(pfd_construct( accept( sockfd, (sockaddr *) &addr, &addrlen ), POLLIN | POLLPRI, 0 ));
+	if (pfds.back().fd == -1)
+	{
+		pfds.pop_back();
+		cerr << "IRCServer::client_connect: accept() error: " << strerror(errno) << endl;
+		return;
+	}
+
+	{
+		char hostname[NI_MAXHOST];
+		int gai_error;
+		if ((gai_error = getnameinfo( (sockaddr *) &addr, sizeof(addr), hostname, NI_MAXHOST, NULL, 0, NI_NUMERICSERV )))
+		{
+			pfds.pop_back();
+			cerr << "IRCServer::client_connect: getnameinfo() error: " << gai_strerror(gai_error) << endl;
+			return;
+		}
+		set<Client>::iterator inserted = clients.insert(Client( pfds.back().fd, ntohs(addr.sin_port), hostname )).first;
+		if (DEBUG_CLIENT_CONNECTION)
+			cout << "client connected: " << *inserted << endl;
+	}
+}
+
+void IRCServer::client_disconnect( int fd )
+{
+	(void) fd;
+	//TODO
 }

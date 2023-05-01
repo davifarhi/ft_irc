@@ -4,20 +4,26 @@
 
 #include <string>
 #include <iostream>
+#include <sys/types.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <poll.h>
+#include <netdb.h>
 #include <cerrno>
 #include <cstdio>
 #include <cstring>
 #include <vector>
-#include <map>
+#include <set>
+
+#include "Client.hpp"
+#include "debug.hpp"
+
 using std::cout;
 using std::cerr;
 using std::endl;
 using std::string;
 using std::vector;
-using std::map;
+using std::set;
 
 class IRCServer
 {
@@ -27,6 +33,8 @@ class IRCServer
 		bool has_started;
 		int sockfd;
 		vector<pollfd> pfds;
+		set<Client> clients;
+
 	public:
 		IRCServer( int port, string pswd );
 		~IRCServer( void );
@@ -38,6 +46,8 @@ class IRCServer
 	private:
 		bool create_socket( void );
 		pollfd pfd_construct( int, short, short ) const;
+		void client_connect( void );
+		void client_disconnect( int fd );
 };
 
 #endif /* end of include guard: IRCSERVER_H */
