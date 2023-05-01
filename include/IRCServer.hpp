@@ -16,6 +16,10 @@
 #include <set>
 #include <algorithm>
 
+#ifndef LINUX_OS
+# include <fcntl.h>
+#endif
+
 #include "Client.hpp"
 #include "debug.hpp"
 
@@ -25,6 +29,12 @@ using std::endl;
 using std::string;
 using std::vector;
 using std::set;
+
+#define BUFFER_SIZE 1024
+
+//TODO password
+//TODO channels
+//TODO receive and send messages
 
 class IRCServer
 {
@@ -46,9 +56,10 @@ class IRCServer
 
 	private:
 		bool create_socket( void );
-		pollfd pfd_construct( int, short, short ) const;
+		pollfd pfd_construct( int fd, short events, short revents ) const;
 		void client_connect( void );
 		vector<pollfd>::iterator client_disconnect( int fd );
+		void receive_message( int fd );
 };
 
 #endif /* end of include guard: IRCSERVER_H */

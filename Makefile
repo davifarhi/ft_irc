@@ -6,7 +6,7 @@
 #    By: dfarhi <dfarhi@student.42lausanne.ch>      +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/06/22 19:19:03 by davifah           #+#    #+#              #
-#    Updated: 2023/04/27 11:16:09 by dfarhi           ###   ########.fr        #
+#    Updated: 2023/05/01 17:02:32 by dfarhi           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -31,6 +31,7 @@ STD98		= 1
 ifeq ($(STD98), 1)
   CC_OPTIONS := $(CC_OPTIONS) -std=c++98 -pedantic
   ifeq ($(SYSTEM), Linux)
+  LIB := ${LIB} -DLINUX_OS
   endif
   ifeq ($(SYSTEM), Darwin)
   CC := g++-12

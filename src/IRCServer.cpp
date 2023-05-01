@@ -39,8 +39,12 @@ void IRCServer::run( void )
 		{
 			client_connect();
 		}
-		for (vector<pollfd>::iterator it = pfds.begin(); it != pfds.end(); it++)
+		for (vector<pollfd>::iterator it = ++pfds.begin(); it != pfds.end(); it++)
 		{
+			if (it->revents &POLLIN)
+			{
+				receive_message(it->fd);
+			}
 			if (it->revents &POLLHUP)
 			{
 				it = --client_disconnect(it->fd);
@@ -62,9 +66,15 @@ bool IRCServer::create_socket( void )
 		cerr << "IRCServer::create_socket: socket() error\n";
 		return true;
 	}
-
-	//if needed setsockopt here
-
+	{
+		int opt = 1;
+		if (setsockopt( sockfd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt) )
+				&& setsockopt( sockfd, SOL_SOCKET, SO_REUSEPORT, &opt, sizeof(opt) ))
+		{
+			cerr << "IRCServer::create_socket: setsockopt() error: " << strerror(errno) << endl;
+			return true;
+		}
+	}
 	{
 		sockaddr_in addr;
 		addr.sin_family = AF_INET;
@@ -116,6 +126,10 @@ void IRCServer::client_connect( void )
 			cerr << "IRCServer::client_connect: getnameinfo() error: " << gai_strerror(gai_error) << endl;
 			return;
 		}
+#ifndef LINUX_OS
+		if (fcntl( pfds.back().fd, F_SETFL, O_NONBLOCK ) == -1)
+			cerr << "IRCServer::client_connect: fcntl() error: " << strerror(errno) << endl;
+#endif
 		set<Client>::iterator inserted = clients.insert(Client( pfds.back().fd, ntohs(addr.sin_port), hostname )).first;
 		if (DEBUG_CLIENT_CONNECTION)
 			cout << "client connected: " << *inserted << endl;
@@ -127,7 +141,7 @@ vector<pollfd>::iterator IRCServer::client_disconnect( int fd )
 	{
 		set<Client>::iterator client = clients.find(fd);
 		if (DEBUG_CLIENT_CONNECTION)
-			cout << "client client disconnected: " << *client << endl;
+			cout << "client disconnected: " << *client << endl;
 		clients.erase(client);
 	}
 	vector<pollfd>::iterator client = std::find( pfds.begin(), pfds.end(), Client(fd) );
@@ -136,4 +150,32 @@ vector<pollfd>::iterator IRCServer::client_disconnect( int fd )
 		cerr << "IRCServer::client_disconnect: error client missing in pollfd vector\n";
 	}
 	return pfds.erase(client);
+}
+
+void IRCServer::receive_message( int fd )
+{
+	char buf[BUFFER_SIZE];
+	string line;
+	while (true)
+	{
+#ifdef LINUX_OS
+		ssize_t n = recv( fd, buf, BUFFER_SIZE, MSG_DONTWAIT );
+#else
+		ssize_t n = recv( fd, buf, BUFFER_SIZE, 0 );
+#endif
+		if (n <= 0)
+			break;
+		for (int i = 0; i < n; i++)
+		{
+			if (buf[i] == '\n')
+			{
+				cout << "message received from " << *clients.find(fd) << ": " << line << endl;
+				line.clear();
+			}
+			else
+			{
+				line.push_back(buf[i]);
+			}
+		}
+	}
 }
