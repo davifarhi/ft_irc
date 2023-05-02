@@ -43,6 +43,7 @@ analysis.txt
 gmon.out
 compile_commands.json
 .cache
+build
 
 # Project executable
 ircserv

@@ -6,7 +6,7 @@
 #    By: dfarhi <dfarhi@student.42lausanne.ch>      +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/06/22 19:19:03 by davifah           #+#    #+#              #
-#    Updated: 2023/04/27 11:16:09 by dfarhi           ###   ########.fr        #
+#    Updated: 2023/05/01 20:16:53 by davifah          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -31,6 +31,7 @@ STD98		= 1
 ifeq ($(STD98), 1)
   CC_OPTIONS := $(CC_OPTIONS) -std=c++98 -pedantic
   ifeq ($(SYSTEM), Linux)
+  LIB := ${LIB} -DLINUX_OS
   endif
   ifeq ($(SYSTEM), Darwin)
   CC := g++-12
@@ -58,7 +59,7 @@ profile:	CC_OPTIONS := ${CC_OPTIONS} -pg
 profile:	all
 
 cmake:
-	cmake -S . build/
+	cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -S . build/
 	ln -sf build/compile_commands.json compile_commands.json
 
 clean:
