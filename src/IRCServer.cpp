@@ -147,6 +147,7 @@ vector<pollfd>::iterator IRCServer::client_disconnect( int fd )
 	{
 		cerr << "IRCServer::client_disconnect: error client missing in pollfd vector\n";
 	}
+	close(fd);
 	return pfds.erase(client);
 }
 
