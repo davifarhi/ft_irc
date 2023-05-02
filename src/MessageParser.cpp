@@ -33,7 +33,7 @@ bool MessageParser::find_text( string& line, string to_find ) const
 
 string MessageParser::get_argument( string& line ) const
 {
-	return line.substr(line.find(':'));
+	return line.substr(line.find(':')).erase(0, 1);
 }
 
 vector<string> MessageParser::split_line( const string& line ) const
@@ -67,7 +67,7 @@ void MessageParser::execCAP( Client& client, string& line )
 	else if (find_text(line, "REQ"))
 	{
 		client.on_cap_negotiation = true;
-		server.send_message_to_client( client, "CAP * NAK " + get_argument(line) + '\n' );
+		server.send_message_to_client( client, "CAP * NAK :" + get_argument(line) + '\n' );
 	}
 	else if (find_text(line, "END"))
 	{
@@ -108,15 +108,10 @@ void MessageParser::execPASS( Client& client, string& line )
 
 void MessageParser::execNICK( Client& client, string& line )
 {
-	(void)client;
 	vector<string> words = split_line(line);
 	if (words.size() < 2)
 	{
 		cout << "ERR_NONICKNAMEGIVEN\n";
-	}
-	else if (words.back() == "NA")
-	{
-		cout << "ERR_ERRONEUSNICKNAME\n";
 	}
 	else
 	{
@@ -140,6 +135,21 @@ void MessageParser::execNICK( Client& client, string& line )
 
 void MessageParser::execUSER( Client& client, string& line )
 {
-	(void)client;
-	(void)line;
+	vector<string> words = split_line(line);
+	if (words.size() < 5)
+	{
+		cout << "ERR_NEEDMOREPARAMS\n";
+	}
+	else if (client.registered)
+	{
+		cout << "ERR_ALREADYREGISTERED\n";
+	}
+	else
+	{
+		client.username = words[1];
+		client.realname = get_argument(line);
+		client.registered = true;
+		if (DEBUG_PRINT_USER_REAL_NAME)
+			cout << client << " registered with name " << client.username << " and real name " << client.realname << endl;
+	}
 }

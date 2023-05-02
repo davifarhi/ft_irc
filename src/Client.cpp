@@ -6,8 +6,7 @@ Client::Client( int fd, int port, const string &hostname ) : fd(fd), port(port),
 {
 	on_cap_negotiation = false;
 	authenticated = false;
-	nickname = "NA";
-	name = "John Doe";
+	registered = false;
 }
 
 bool operator<( const Client& lhs, const Client& rhs ) { return (lhs.fd < rhs.fd); }

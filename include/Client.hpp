@@ -13,8 +13,10 @@ class Client
 
 		bool on_cap_negotiation;
 		bool authenticated;
+		bool registered;
 		string nickname;
-		string name;
+		string username;
+		string realname;
 
 		Client( int fd );
 		Client( int fd, int port, const string &hostname );

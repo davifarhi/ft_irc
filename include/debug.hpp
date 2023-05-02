@@ -7,5 +7,6 @@
 #define DEBUG_PRINT_SENT_MESSAGE 1
 #define DEBUG_PRINT_AUTHENTICATION 0
 #define DEBUG_PRINT_NICKNAME 0
+#define DEBUG_PRINT_USER_REAL_NAME 1
 
 #endif /* end of include guard: DEBUG_H */
