@@ -12,9 +12,16 @@ class Client
 		const string hostname;
 
 		bool on_cap_negotiation;
+		bool authenticated;
+		bool registered;
+		string nickname;
+		string username;
+		string realname;
 
 		Client( int fd );
 		Client( int fd, int port, const string &hostname );
+	private:
+		static unsigned int guest_n;
 };
 
 bool operator<( const Client& lhs, const Client& rhs );
