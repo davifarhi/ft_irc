@@ -62,6 +62,7 @@ class IRCServer
 
 		void run( void );
 
+		const string& get_pswd( void ) const;
 		bool get_has_started( void ) const;
 
 	private:

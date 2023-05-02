@@ -53,6 +53,9 @@ void IRCServer::run( void )
 	}
 }
 
+const string& IRCServer::get_pswd( void ) const
+{ return pswd; }
+
 bool IRCServer::get_has_started( void ) const
 {
 	return this->has_started;
@@ -169,6 +172,10 @@ void IRCServer::receive_message( Client& client )
 		{
 			if (buf[i] == '\n')
 			{
+				// cleaning carriage returns in received text
+				size_t pos;
+				while ((pos = line.rfind((char)13)) != line.npos)
+					line.erase(pos);
 				if (DEBUG_PRINT_RECEIVED_MESSAGE)
 					cout << "RX " << client << ": " << line << endl;
 				msg_parser.parse( client, line );
