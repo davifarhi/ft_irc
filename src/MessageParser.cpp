@@ -109,7 +109,33 @@ void MessageParser::execPASS( Client& client, string& line )
 void MessageParser::execNICK( Client& client, string& line )
 {
 	(void)client;
-	(void)line;
+	vector<string> words = split_line(line);
+	if (words.size() < 2)
+	{
+		cout << "ERR_NONICKNAMEGIVEN\n";
+	}
+	else if (words.back() == "NA")
+	{
+		cout << "ERR_ERRONEUSNICKNAME\n";
+	}
+	else
+	{
+		// bad for performance, iterating through set
+		for (set<Client>::iterator it = server.clients.begin(); it != server.clients.end(); it++)
+		{
+			if (it->nickname == words.back())
+			{
+				cout << "ERR_NICKNAMEINUSE\n";
+				return;
+			}
+		}
+		if (DEBUG_PRINT_NICKNAME)
+			cout << client << " has changed nickname to " << words.back() << endl;
+		server.send_message_to_client( client, client.nickname + " NICK " + words.back() );
+		client.nickname = words.back();
+		//TODO (maybe) send message announcing change to all other users
+		//https://modern.ircdocs.horse/#nick-message
+	}
 }
 
 void MessageParser::execUSER( Client& client, string& line )
