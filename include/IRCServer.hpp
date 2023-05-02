@@ -2,6 +2,8 @@
 
 #define IRCSERVER_H
 
+#include "debug.hpp"
+
 #include <string>
 #include <iostream>
 #include <sys/types.h>
@@ -20,15 +22,19 @@
 # include <fcntl.h>
 #endif
 
-#include "Client.hpp"
-#include "debug.hpp"
-
 using std::cout;
 using std::cerr;
 using std::endl;
 using std::string;
 using std::vector;
 using std::set;
+
+class Client;
+class MessageParser;
+class IRCServer;
+
+#include "MessageParser.hpp"
+#include "Client.hpp"
 
 #define BUFFER_SIZE 1024
 
@@ -39,6 +45,7 @@ using std::set;
 class IRCServer
 {
 	private:
+		MessageParser msg_parser;
 		const int port;
 		const string pswd;
 		bool has_started;
@@ -59,7 +66,9 @@ class IRCServer
 		pollfd pfd_construct( int fd, short events, short revents ) const;
 		void client_connect( void );
 		vector<pollfd>::iterator client_disconnect( int fd );
-		void receive_message( int fd );
+		void receive_message( Client& client );
+
+		friend class MessageParser;
 };
 
 #endif /* end of include guard: IRCSERVER_H */

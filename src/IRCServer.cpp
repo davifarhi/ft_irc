@@ -1,6 +1,6 @@
 #include "IRCServer.hpp"
 
-IRCServer::IRCServer( int port, string pswd ) : port(port), pswd(pswd), has_started(false)
+IRCServer::IRCServer( int port, string pswd ) : msg_parser(*this), port(port), pswd(pswd), has_started(false)
 {
 	if (!port)
 	{
@@ -14,7 +14,7 @@ IRCServer::IRCServer( int port, string pswd ) : port(port), pswd(pswd), has_star
 	}
 	if (create_socket())
 		return;
-	cout << "Starting IRC server at port " << port << " with password: " << pswd << endl;
+	cout << "Ready to start IRC server at port " << port << " with password: " << pswd << endl;
 	this->has_started = true;
 }
 
@@ -43,7 +43,7 @@ void IRCServer::run( void )
 		{
 			if (it->revents &POLLIN)
 			{
-				receive_message(it->fd);
+				receive_message(const_cast<Client&>(*clients.find(it->fd)));
 			}
 			if (it->revents &POLLHUP)
 			{
@@ -103,8 +103,6 @@ pollfd IRCServer::pfd_construct( int fd, short events, short revents ) const
 	return pfd;
 }
 
-bool operator==( const pollfd& lhs, const Client& rhs ) { return lhs.fd == rhs.fd; }
-
 void IRCServer::client_connect( void )
 {
 	sockaddr_in addr;
@@ -152,16 +150,17 @@ vector<pollfd>::iterator IRCServer::client_disconnect( int fd )
 	return pfds.erase(client);
 }
 
-void IRCServer::receive_message( int fd )
+void IRCServer::receive_message( Client& client )
 {
 	char buf[BUFFER_SIZE];
+	memset(buf, 0, BUFFER_SIZE);
 	string line;
 	while (true)
 	{
 #ifdef LINUX_OS
-		ssize_t n = recv( fd, buf, BUFFER_SIZE, MSG_DONTWAIT );
+		ssize_t n = recv( client.fd, buf, BUFFER_SIZE, MSG_DONTWAIT );
 #else
-		ssize_t n = recv( fd, buf, BUFFER_SIZE, 0 );
+		ssize_t n = recv( client.fd, buf, BUFFER_SIZE, 0 );
 #endif
 		if (n <= 0)
 			break;
@@ -169,7 +168,10 @@ void IRCServer::receive_message( int fd )
 		{
 			if (buf[i] == '\n')
 			{
-				cout << "message received from " << *clients.find(fd) << ": " << line << endl;
+				if (DEBUG_PRINT_CLIENT_MESSAGE)
+					cout << "message received from " << client << ": " << line << endl;
+				//parse message
+				msg_parser.parse( client, line );
 				line.clear();
 			}
 			else
@@ -177,5 +179,6 @@ void IRCServer::receive_message( int fd )
 				line.push_back(buf[i]);
 			}
 		}
+		memset(buf, 0, n);
 	}
 }

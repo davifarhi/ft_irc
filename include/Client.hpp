@@ -1,14 +1,8 @@
+#include "IRCServer.hpp"
+
 #ifndef CLIENT_H
 
 #define CLIENT_H
-
-#include <string>
-#include <iostream>
-
-using std::cout;
-using std::cerr;
-using std::endl;
-using std::string;
 
 class Client
 {
@@ -23,5 +17,6 @@ class Client
 
 bool operator<( const Client& lhs, const Client& rhs );
 std::ostream& operator<<( std::ostream& os, const Client& c );
+bool operator==( const pollfd& lhs, const Client& rhs );
 
 #endif /* end of include guard: CLIENT_H */

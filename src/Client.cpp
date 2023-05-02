@@ -8,7 +8,8 @@ bool operator<( const Client& lhs, const Client& rhs ) { return (lhs.fd < rhs.fd
 
 std::ostream& operator<<( std::ostream& os, const Client& c )
 {
-	//os << "fd: " << c.fd << ", port: " << c.port << ", hostname: " << c.hostname;
 	os << "(" << c.fd << ", " << c.port << ", " << c.hostname << ")";
 	return os;
 }
+
+bool operator==( const pollfd& lhs, const Client& rhs ) { return lhs.fd == rhs.fd; }
