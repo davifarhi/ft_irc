@@ -11,6 +11,8 @@ class Client
 		const int port;
 		const string hostname;
 
+		bool on_cap_negotiation;
+
 		Client( int fd );
 		Client( int fd, int port, const string &hostname );
 };

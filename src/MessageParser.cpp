@@ -26,5 +26,23 @@ void MessageParser::execCAP( Client& client, string& line )
 	(void)client;
 	if (line.find("LS") != line.npos)
 	{
+		client.on_cap_negotiation = true;
+		server.send_message_to_client(client, "CAP * LS :\n");
+	}
+	else if (line.find("LIST") != line.npos)
+	{
+		server.send_message_to_client(client, "CAP * LIST :\n");
+	}
+	else if (line.find("REQ") != line.npos)
+	{
+		client.on_cap_negotiation = true;
+		string msg("CAP * NAK ");
+		msg += line.substr(line.find(':'));
+		msg += '\n';
+		server.send_message_to_client(client, msg);
+	}
+	else if (line.find("END") != line.npos)
+	{
+		client.on_cap_negotiation = false;
 	}
 }

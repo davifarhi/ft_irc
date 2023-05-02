@@ -153,7 +153,7 @@ vector<pollfd>::iterator IRCServer::client_disconnect( int fd )
 void IRCServer::receive_message( Client& client )
 {
 	char buf[BUFFER_SIZE];
-	memset(buf, 0, BUFFER_SIZE);
+	//memset(buf, 0, BUFFER_SIZE);
 	string line;
 	while (true)
 	{
@@ -168,9 +168,8 @@ void IRCServer::receive_message( Client& client )
 		{
 			if (buf[i] == '\n')
 			{
-				if (DEBUG_PRINT_CLIENT_MESSAGE)
+				if (DEBUG_PRINT_RECEIVED_MESSAGE)
 					cout << "message received from " << client << ": " << line << endl;
-				//parse message
 				msg_parser.parse( client, line );
 				line.clear();
 			}
@@ -179,6 +178,20 @@ void IRCServer::receive_message( Client& client )
 				line.push_back(buf[i]);
 			}
 		}
-		memset(buf, 0, n);
+		//memset(buf, 0, n);
+	}
+}
+
+void IRCServer::send_message_to_client( Client& client, string msg )
+{
+	if (send( client.fd, msg.c_str(), msg.size(), 0) == -1)
+	{
+		cerr << "IRCServer::send_message_to_client: send() error: " << strerror(errno) << endl;
+		return;
+	}
+	if (DEBUG_PRINT_SENT_MESSAGE)
+	{
+		cout << "server to " << client << ": " << msg;
+		if (msg.at(msg.size() - 1) != '\n') cout << endl;
 	}
 }

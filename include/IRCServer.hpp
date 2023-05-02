@@ -67,6 +67,7 @@ class IRCServer
 		void client_connect( void );
 		vector<pollfd>::iterator client_disconnect( int fd );
 		void receive_message( Client& client );
+		void send_message_to_client( Client& client, string msg );
 
 		friend class MessageParser;
 };
