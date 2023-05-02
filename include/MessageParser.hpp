@@ -25,8 +25,12 @@ class MessageParser
 
 		bool find_text( string& line, string to_find ) const;
 		string get_argument( string& line ) const;
+		vector<string> split_line( const string& line ) const;
 
 		void execCAP( Client& client, string& line );
+		void execPASS( Client& client, string& line );
+		void execNICK( Client& client, string& line );
+		void execUSER( Client& client, string& line );
 };
 
 #endif /* end of include guard: MESSAGEPARSER_H */

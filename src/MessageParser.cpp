@@ -1,4 +1,5 @@
 #include "MessageParser.hpp"
+#include "debug.hpp"
 #include <string>
 
 client_cmd::client_cmd( string cmd, void(MessageParser::*exec)( Client&, string& ) ) : cmd(cmd), exec(exec) {}
@@ -11,6 +12,9 @@ MessageParser::MessageParser( IRCServer& server ) : server(server)
 void MessageParser::init( void )
 {
 	cmd_list.push_back(client_cmd( string("CAP"), &MessageParser::execCAP ));
+	cmd_list.push_back(client_cmd( string("PASS"), &MessageParser::execPASS ));
+	cmd_list.push_back(client_cmd( string("NICK"), &MessageParser::execNICK ));
+	cmd_list.push_back(client_cmd( string("USER"), &MessageParser::execUSER ));
 }
 
 void MessageParser::parse( Client& client, string& line )
@@ -30,6 +34,20 @@ bool MessageParser::find_text( string& line, string to_find ) const
 string MessageParser::get_argument( string& line ) const
 {
 	return line.substr(line.find(':'));
+}
+
+vector<string> MessageParser::split_line( const string& line ) const
+{
+	vector<string> words;
+	size_t pos_start = 0, pos_end = 0;
+	while ((pos_end = line.find( ' ', pos_start )) != line.npos)
+	{
+		words.push_back(line.substr( pos_start, pos_end - pos_start ));
+		pos_start = pos_end + 1;
+	}
+	if (pos_start < line.size())
+		words.push_back(line.substr(pos_start));
+	return words;
 }
 
 #define PASSWDERROR(client) (client ": Password doesn't match")
@@ -58,4 +76,44 @@ void MessageParser::execCAP( Client& client, string& line )
 	}
 }
 
+void MessageParser::execPASS( Client& client, string& line )
+{
+	vector<string> words = split_line(line);
+	if (words.size() < 2)
+	{
+		cout << "ERR_NEEDMOREPARAMS\n";
+		//ERR_NEEDMOREPARAMS
+	}
+	else if (client.authenticated)
+	{
+		cout << "ERR_ALREADYREGISTERED\n";
+		//ERR_ALREADYREGISTERED
+	}
+	else if (words.back() != server.get_pswd())
+	{
+		cout << "'" << words.back() << "'\n'" << server.get_pswd() << "'\n";
+		cout << (int)words.back().at(4) << endl;
+		cout << "ERR_PASSWDMISMATCH\n";
+		if (words.back().size() != server.get_pswd().size())
+			cout << words.back().size() << " " << server.get_pswd().size() << " diferent sizes\n";
+		//ERR_PASSWDMISMATCH
+	}
+	else
+	{
+		if (DEBUG_PRINT_AUTHENTICATION)
+			cout << client << " has been succesfully authenticated\n";
+		client.authenticated = true;
+	}
+}
 
+void MessageParser::execNICK( Client& client, string& line )
+{
+	(void)client;
+	(void)line;
+}
+
+void MessageParser::execUSER( Client& client, string& line )
+{
+	(void)client;
+	(void)line;
+}
