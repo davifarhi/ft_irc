@@ -169,7 +169,7 @@ void IRCServer::receive_message( Client& client )
 			if (buf[i] == '\n')
 			{
 				if (DEBUG_PRINT_RECEIVED_MESSAGE)
-					cout << "message received from " << client << ": " << line << endl;
+					cout << client << " to server: " << line << endl;
 				msg_parser.parse( client, line );
 				line.clear();
 			}
