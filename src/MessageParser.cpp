@@ -1,4 +1,5 @@
 #include "MessageParser.hpp"
+#include <string>
 
 client_cmd::client_cmd( string cmd, void(MessageParser::*exec)( Client&, string& ) ) : cmd(cmd), exec(exec) {}
 
@@ -31,6 +32,9 @@ string MessageParser::get_argument( string& line ) const
 	return line.substr(line.find(':'));
 }
 
+#define PASSWDERROR(client) (client ": Password doesn't match")
+		//cout << PASSWDERROR("test") << endl;
+
 void MessageParser::execCAP( Client& client, string& line )
 {
 	if (find_text(line, "LS"))
@@ -50,5 +54,8 @@ void MessageParser::execCAP( Client& client, string& line )
 	else if (find_text(line, "END"))
 	{
 		client.on_cap_negotiation = false;
+		//server.send_message_to_client( client, "001: dfarhi :Welcome to the network\n" );
 	}
 }
+
+

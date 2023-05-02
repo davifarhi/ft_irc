@@ -38,6 +38,8 @@ class IRCServer;
 
 #define BUFFER_SIZE 1024
 
+//TODO PASS NICK USER
+//TODO msgs erreur
 //TODO password
 //TODO channels
 //TODO receive and send messages
