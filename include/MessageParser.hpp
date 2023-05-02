@@ -23,6 +23,9 @@ class MessageParser
 	private:
 		void init( void );
 
+		bool find_text( string& line, string to_find ) const;
+		string get_argument( string& line ) const;
+
 		void execCAP( Client& client, string& line );
 };
 

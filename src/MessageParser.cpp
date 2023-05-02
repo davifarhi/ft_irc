@@ -21,27 +21,33 @@ void MessageParser::parse( Client& client, string& line )
 	}
 }
 
+bool MessageParser::find_text( string& line, string to_find ) const
+{
+	return (line.find(to_find) != line.npos);
+}
+
+string MessageParser::get_argument( string& line ) const
+{
+	return line.substr(line.find(':'));
+}
+
 void MessageParser::execCAP( Client& client, string& line )
 {
-	(void)client;
-	if (line.find("LS") != line.npos)
+	if (find_text(line, "LS"))
 	{
 		client.on_cap_negotiation = true;
-		server.send_message_to_client(client, "CAP * LS :\n");
+		server.send_message_to_client( client, "CAP * LS :\n" );
 	}
-	else if (line.find("LIST") != line.npos)
+	else if (find_text(line, "LIST"))
 	{
-		server.send_message_to_client(client, "CAP * LIST :\n");
+		server.send_message_to_client( client, "CAP * LIST :\n" );
 	}
-	else if (line.find("REQ") != line.npos)
+	else if (find_text(line, "REQ"))
 	{
 		client.on_cap_negotiation = true;
-		string msg("CAP * NAK ");
-		msg += line.substr(line.find(':'));
-		msg += '\n';
-		server.send_message_to_client(client, msg);
+		server.send_message_to_client( client, "CAP * NAK " + get_argument(line) + '\n' );
 	}
-	else if (line.find("END") != line.npos)
+	else if (find_text(line, "END"))
 	{
 		client.on_cap_negotiation = false;
 	}
