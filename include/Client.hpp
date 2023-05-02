@@ -20,6 +20,8 @@ class Client
 
 		Client( int fd );
 		Client( int fd, int port, const string &hostname );
+	private:
+		static unsigned int guest_n;
 };
 
 bool operator<( const Client& lhs, const Client& rhs );

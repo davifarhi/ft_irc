@@ -6,6 +6,7 @@
 
 #include <string>
 #include <iostream>
+#include <sstream>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
@@ -22,6 +23,9 @@
 #ifndef LINUX_OS
 # include <fcntl.h>
 #endif
+
+
+#define SSTR( x ) static_cast< std::ostringstream & >( ( std::ostringstream() << std::dec << x ) ).str()
 
 using std::cout;
 using std::cerr;

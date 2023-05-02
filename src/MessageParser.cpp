@@ -73,6 +73,8 @@ void MessageParser::execCAP( Client& client, string& line )
 	{
 		client.on_cap_negotiation = false;
 		//server.send_message_to_client( client, "001: dfarhi :Welcome to the network\n" );
+		if (DEBUG_PING_CLIENT)
+			server.send_message_to_client( client, "PING :just a test\n" );
 	}
 }
 
@@ -126,7 +128,7 @@ void MessageParser::execNICK( Client& client, string& line )
 		}
 		if (DEBUG_PRINT_NICKNAME)
 			cout << client << " has changed nickname to " << words.back() << endl;
-		server.send_message_to_client( client, client.nickname + " NICK " + words.back() );
+		server.send_message_to_client( client, client.nickname + " NICK " + words.back() + "\n" );
 		client.nickname = words.back();
 		//TODO (maybe) send message announcing change to all other users
 		//https://modern.ircdocs.horse/#nick-message
