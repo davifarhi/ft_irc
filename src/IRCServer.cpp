@@ -169,7 +169,7 @@ void IRCServer::receive_message( Client& client )
 			if (buf[i] == '\n')
 			{
 				if (DEBUG_PRINT_RECEIVED_MESSAGE)
-					cout << client << " to server: " << line << endl;
+					cout << "RX " << client << ": " << line << endl;
 				msg_parser.parse( client, line );
 				line.clear();
 			}
@@ -191,7 +191,7 @@ void IRCServer::send_message_to_client( Client& client, string msg )
 	}
 	if (DEBUG_PRINT_SENT_MESSAGE)
 	{
-		cout << "server to " << client << ": " << msg;
+		cout << "TX " << client << ": " << msg;
 		if (msg.at(msg.size() - 1) != '\n') cout << endl;
 	}
 }
