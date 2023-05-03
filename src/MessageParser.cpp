@@ -72,6 +72,7 @@ void MessageParser::execCAP( Client& client, string& line )
 	else if (find_text(line, "END"))
 	{
 		client.on_cap_negotiation = false;
+		server.send_message_to_client(client, RPL_WELCOME(client.nickname));
 		//server.send_message_to_client( client, "001: dfarhi :Welcome to the network\n" );
 		if (DEBUG_PING_CLIENT)
 			server.send_message_to_client( client, "PING :just a test\n" );
@@ -106,7 +107,7 @@ void MessageParser::execPASS( Client& client, string& line )
 			cout << client << " has been succesfully authenticated\n";
 		client.authenticated = true;
 		cout << RPL_WELCOME(client.nickname) << "\n";
-		server.send_message_to_client(client, RPL_WELCOME(client.nickname));
+//		server.send_message_to_client(client, RPL_WELCOME(client.nickname));
 	}
 }
 
