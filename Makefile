@@ -34,7 +34,7 @@ ifeq ($(STD98), 1)
   LIB := ${LIB} -DLINUX_OS
   endif
   ifeq ($(SYSTEM), Darwin)
-  CC := g++-12
+  CC := g++
   endif
 endif
 
