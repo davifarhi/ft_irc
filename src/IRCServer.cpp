@@ -170,15 +170,18 @@ void IRCServer::receive_message( Client& client )
 			break;
 		for (int i = 0; i < n; i++)
 		{
-			if (buf[i] == '\n')
+			//if (buf[i] == '\n' && (i == 0 || buf[i - 1] == '\r')) //this one ignore \n not preceded by \r
+			if (buf [i] == '\n')
 			{
 				// cleaning carriage returns in received text
-				size_t pos;
-				while ((pos = line.rfind((char)13)) != line.npos)
-					line.erase(pos);
-				if (DEBUG_PRINT_RECEIVED_MESSAGE)
-					cout << "RX " << client << ": " << line << endl;
-				msg_parser.parse( client, line );
+				if (line.size() > 1)
+				{
+					if (line[line.size() - 1] == '\r')
+						line.erase(line.size() - 1);
+					if (DEBUG_PRINT_RECEIVED_MESSAGE)
+						cout << "RX " << client << ": " << line << endl;
+					msg_parser.parse( client, line );
+				}
 				line.clear();
 			}
 			else
@@ -192,8 +195,9 @@ void IRCServer::receive_message( Client& client )
 
 void IRCServer::send_message_to_client( Client& client, string msg )
 {
-	if (msg[msg.size() - 1] != '\n')
-		msg += '\n';
+	if (msg[msg.size() - 1] == '\n')
+		msg.erase(msg.size() - 1);
+	msg += "\r\n";
 	if (send( client.fd, msg.c_str(), msg.size(), 0) == -1)
 	{
 		cerr << "IRCServer::send_message_to_client: send() error: " << strerror(errno) << endl;
@@ -202,6 +206,34 @@ void IRCServer::send_message_to_client( Client& client, string msg )
 	if (DEBUG_PRINT_SENT_MESSAGE)
 	{
 		cout << "TX " << client << ": " << msg;
-		if (msg.at(msg.size() - 1) != '\n') cout << endl;
 	}
+}
+
+Channel& IRCServer::get_channel( const string& name )
+{
+	return const_cast<Channel&>(*channels.insert(name).first);
+}
+
+bool IRCServer::get_channel( const string& name, Channel** res )
+{
+	set<Channel>::iterator it = channels.find(name);
+	if (it == channels.end())
+		return false;
+	*res = const_cast<Channel*>(&(*it));
+	return true;
+}
+
+void IRCServer::print_channels( void )
+{
+	int i = 0;
+	for (set<Channel>::iterator it = channels.begin(); it != channels.end(); it++)
+	{
+		cout << i++ << " " << it->name << " userN " << it->clients.size() << endl;
+	}
+}
+
+void IRCServer::delete_channel_if_empty( Channel* channel )
+{
+	if (channel->clients.size()) return;
+	channels.erase(*channel);
 }

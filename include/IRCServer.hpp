@@ -19,6 +19,7 @@
 #include <cstring>
 #include <vector>
 #include <set>
+#include <list>
 #include <algorithm>
 
 #ifndef LINUX_OS
@@ -34,20 +35,19 @@ using std::endl;
 using std::string;
 using std::vector;
 using std::set;
+using std::list;
 
 class Client;
 class MessageParser;
+class Channel;
 class IRCServer;
 
+#include "Channel.hpp"
 #include "MessageParser.hpp"
 #include "Client.hpp"
 
 #define BUFFER_SIZE 1024
 
-//TODO PASS NICK USER
-//TODO msgs erreur
-//TODO password
-//TODO channels
 //TODO receive and send messages
 
 class IRCServer
@@ -60,12 +60,17 @@ class IRCServer
 		int sockfd;
 		vector<pollfd> pfds;
 		set<Client> clients;
+		set<Channel> channels;
+
+		friend class MessageParser;
 
 	public:
 		IRCServer( int port, string pswd );
 		~IRCServer( void );
 
 		void run( void );
+
+		void send_message_to_client( Client& client, string msg );
 
 		const string& get_pswd( void ) const;
 		bool get_has_started( void ) const;
@@ -76,9 +81,13 @@ class IRCServer
 		void client_connect( void );
 		vector<pollfd>::iterator client_disconnect( int fd );
 		void receive_message( Client& client );
-		void send_message_to_client( Client& client, string msg );
 
-		friend class MessageParser;
+		Channel& get_channel( const string& name );
+		bool get_channel( const string& name, Channel** res );
+		void channel_remove_user( Client& client );
+		void channel_add_user( Client& client, Channel& channel );
+		void print_channels( void );
+		void delete_channel_if_empty( Channel* channel );
 };
 
 #endif /* end of include guard: IRCSERVER_H */

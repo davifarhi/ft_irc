@@ -32,6 +32,13 @@ class MessageParser
 		void execPASS( Client& client, string& line );
 		void execNICK( Client& client, string& line );
 		void execUSER( Client& client, string& line );
+		void execPING( Client& client, string& line );
+		void execQUIT( Client& client, string& line );
+		void execJOIN( Client& client, string& line );
+		void execPART( Client& client, string& line );
+
+		//example for copy paste
+		void exec( Client& client, string& line );
 };
 
 #endif /* end of include guard: MESSAGEPARSER_H */

@@ -6,7 +6,9 @@
 
 class Client
 {
-	public:
+	private:
+		static unsigned int guest_n;
+
 		const int fd;
 		const int port;
 		const string hostname;
@@ -18,14 +20,25 @@ class Client
 		string username;
 		string realname;
 
+		set<Channel*> channels;
+
+		friend class IRCServer;
+		friend class Channel;
+		friend class MessageParser;
+
+	public:
 		Client( int fd );
 		Client( int fd, int port, const string &hostname );
-	private:
-		static unsigned int guest_n;
+
+		bool is_in_channel( Channel& channel ) const;
+
+		void join_channel( Channel& channel );
+		void part_channel( Channel& channel );
+
+		friend bool operator<( const Client& lhs, const Client& rhs );
+		friend std::ostream& operator<<( std::ostream& os, const Client& c );
+		friend bool operator==( const pollfd& lhs, const Client& rhs );
 };
 
-bool operator<( const Client& lhs, const Client& rhs );
-std::ostream& operator<<( std::ostream& os, const Client& c );
-bool operator==( const pollfd& lhs, const Client& rhs );
 
 #endif /* end of include guard: CLIENT_H */

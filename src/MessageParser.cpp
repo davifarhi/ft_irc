@@ -15,6 +15,10 @@ void MessageParser::init( void )
 	cmd_list.push_back(client_cmd( string("PASS"), &MessageParser::execPASS ));
 	cmd_list.push_back(client_cmd( string("NICK"), &MessageParser::execNICK ));
 	cmd_list.push_back(client_cmd( string("USER"), &MessageParser::execUSER ));
+	cmd_list.push_back(client_cmd( string("PING"), &MessageParser::execPING ));
+	cmd_list.push_back(client_cmd( string("QUIT"), &MessageParser::execQUIT ));
+	cmd_list.push_back(client_cmd( string("JOIN"), &MessageParser::execJOIN ));
+	cmd_list.push_back(client_cmd( string("PART"), &MessageParser::execPART ));
 }
 
 void MessageParser::parse( Client& client, string& line )
@@ -22,7 +26,10 @@ void MessageParser::parse( Client& client, string& line )
 	for (vector<client_cmd>::iterator it = cmd_list.begin(); it != cmd_list.end(); it++)
 	{
 		if (line.rfind( it->cmd, 0 ) != line.npos)
+		{
 			(this->*(it->exec))(client, line);
+			return;
+		}
 	}
 }
 
@@ -121,7 +128,7 @@ void MessageParser::execNICK( Client& client, string& line )
 		}
 		if (DEBUG_PRINT_NICKNAME)
 			cout << client << " has changed nickname to " << words.back() << endl;
-		//server.send_message_to_client( client, client.nickname + " NICK " + words.back() + "\n" );
+		server.send_message_to_client( client, ":" + client.nickname + " NICK " + words.back() + "\n" );
 		client.nickname = words.back();
 		//TODO (maybe) send message announcing change to all other users
 		//https://modern.ircdocs.horse/#nick-message
@@ -153,4 +160,83 @@ void MessageParser::execUSER( Client& client, string& line )
 				server.send_message_to_client( client, "PING :just a test\n" );
 		}
 	}
+}
+
+void MessageParser::execPING( Client& client, string& line )
+{
+	vector<string> words = split_line(line);
+	string msg("PONG");
+	if (words.size() > 1)
+		for (vector<string>::iterator it = ++words.begin(); it != words.end(); it++)
+			msg += " " + *it;
+	server.send_message_to_client( client, msg + '\n' );
+}
+
+void MessageParser::execQUIT( Client& client, string& line )
+{
+	string reason = get_argument(line);
+	if (DEBUG_PRINT_CLIENT_QUIT)
+		cout << client << " quit the network, reason: " << reason << endl;
+	for (vector<pollfd>::iterator it = server.pfds.begin(); it != server.pfds.end(); it++)
+	{
+		if (it->fd == client.fd)
+		{
+			it->events = POLLHUP;
+			break;
+		}
+	}
+	server.send_message_to_client( client, "ERROR" );
+	//TODO (maybe) send message announcing Quit to all other users
+	//https://modern.ircdocs.horse/#quit-message
+}
+
+void MessageParser::execJOIN( Client& client, string& line )
+{
+	vector<string> words = split_line(line);
+	if (words.size() < 2)
+	{
+		server.send_message_to_client( client, ERR_NEEDMOREPARAMS( client.nickname, "JOIN" ) );
+	}
+	else
+	{
+		Channel& chan = server.get_channel(words[1]);
+		if (!chan.join_client(client)) return;
+		client.join_channel(chan);
+		chan.send_msg_to_all( CMD_CONFIRM( client.nickname, client.hostname, "JOIN", "#" + chan.name ), server );
+		chan.send_topic_to_client( client, server );
+		chan.send_names_to_client( client, server );
+	}
+}
+
+void MessageParser::execPART( Client& client, string& line )
+{
+	vector<string> words = split_line(line);
+	if (words.size() < 2)
+	{
+		server.send_message_to_client( client, ERR_NEEDMOREPARAMS( client.nickname, "PART" ) );
+		return;
+	}
+	Channel* chan;
+	if (!server.get_channel( words[1], &chan ))
+	{
+		server.send_message_to_client( client, ERR_NOSUCHCHANNEL( client.nickname, words[1] ) );
+	}
+	else if (!client.is_in_channel(*chan))
+	{
+		server.send_message_to_client( client, ERR_NOTONCHANNEL( client.nickname, words[1] ) );
+	}
+	else
+	{
+		chan->send_msg_to_all( CMD_CONFIRM( client.nickname, client.hostname, "PART", "#" + chan->name ), server );
+		chan->part_client(client);
+		client.part_channel(*chan);
+		server.delete_channel_if_empty( chan );
+	}
+}
+
+// example for copy paste
+void MessageParser::exec( Client& client, string& line )
+{
+	(void) client;
+	(void) line;
 }
