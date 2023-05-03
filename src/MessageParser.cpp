@@ -230,9 +230,7 @@ void MessageParser::execPART( Client& client, string& line )
 		chan->send_msg_to_all( CMD_CONFIRM( client.nickname, client.hostname, "PART", "#" + chan->name ), server );
 		chan->part_client(client);
 		client.part_channel(*chan);
-		//server.send_message_to_client( client, ":" + client.nickname + "@" + client.hostname + " PART " + words[1] );
 		server.delete_channel_if_empty( chan );
-		//TODO send PART message to all users in channel
 	}
 }
 
