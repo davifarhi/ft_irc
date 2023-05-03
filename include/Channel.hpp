@@ -26,6 +26,8 @@ class Channel
 		void send_topic_to_client( Client& client, IRCServer& server ) const;
 		void send_names_to_client( Client& client, IRCServer& server) const;
 
+		void send_msg_to_all( string msg, IRCServer& server, Client* exception = 0 );
+
 		friend bool operator<( const Channel& lhs, const Channel& rhs );
 
 		static string trim_channel_name( const string& str );

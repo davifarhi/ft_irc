@@ -22,6 +22,10 @@
 #define RPL_NAMREPLY(client, channel, nick)	"353 " + client + " = " + channel + " :" + nick
 #define RPL_ENDOFNAMES(client, channel)		"366 " + client + " " + channel + " :End of /NAMES list"
 
+//server command answer
+
+#define CMD_CONFIRM(nick, host, cmd, arg)	":" + nick + "@" + host + " " + cmd + " " + arg
+
 #endif
 
 //!source = client

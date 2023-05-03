@@ -202,10 +202,9 @@ void MessageParser::execJOIN( Client& client, string& line )
 		Channel& chan = server.get_channel(words[1]);
 		if (!chan.join_client(client)) return;
 		client.join_channel(chan);
-		server.send_message_to_client( client, ":" + client.nickname + " JOIN #" + chan.name );
+		chan.send_msg_to_all( CMD_CONFIRM( client.nickname, client.hostname, "JOIN", "#" + chan.name ), server );
 		chan.send_topic_to_client( client, server );
 		chan.send_names_to_client( client, server );
-		//TODO send JOIN message to all users in channel
 	}
 }
 
