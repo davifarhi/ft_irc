@@ -170,12 +170,10 @@ void IRCServer::receive_message( Client& client )
 			break;
 		for (int i = 0; i < n; i++)
 		{
-			if (buf[i] == '\n')
+			if (buf[i] == '\n' && (i == 0 || buf[i - 1] == '\r'))
 			{
 				// cleaning carriage returns in received text
-				size_t pos;
-				while ((pos = line.rfind((char)13)) != line.npos)
-					line.erase(pos);
+				line.erase(line.size() - 1);
 				if (DEBUG_PRINT_RECEIVED_MESSAGE)
 					cout << "RX " << client << ": " << line << endl;
 				msg_parser.parse( client, line );
@@ -192,8 +190,9 @@ void IRCServer::receive_message( Client& client )
 
 void IRCServer::send_message_to_client( Client& client, string msg )
 {
-	if (msg[msg.size() - 1] != '\n')
-		msg += '\n';
+	if (msg[msg.size() - 1] == '\n')
+		msg.erase(msg.size() - 1);
+	msg += "\r\n";
 	if (send( client.fd, msg.c_str(), msg.size(), 0) == -1)
 	{
 		cerr << "IRCServer::send_message_to_client: send() error: " << strerror(errno) << endl;
@@ -202,7 +201,6 @@ void IRCServer::send_message_to_client( Client& client, string msg )
 	if (DEBUG_PRINT_SENT_MESSAGE)
 	{
 		cout << "TX " << client << ": " << msg;
-		if (msg.at(msg.size() - 1) != '\n') cout << endl;
 	}
 }
 
