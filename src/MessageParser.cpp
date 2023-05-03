@@ -15,6 +15,8 @@ void MessageParser::init( void )
 	cmd_list.push_back(client_cmd( string("PASS"), &MessageParser::execPASS ));
 	cmd_list.push_back(client_cmd( string("NICK"), &MessageParser::execNICK ));
 	cmd_list.push_back(client_cmd( string("USER"), &MessageParser::execUSER ));
+	cmd_list.push_back(client_cmd( string("PING"), &MessageParser::execUSER ));
+	cmd_list.push_back(client_cmd( string("QUIT"), &MessageParser::execUSER ));
 }
 
 void MessageParser::parse( Client& client, string& line )
@@ -153,4 +155,23 @@ void MessageParser::execUSER( Client& client, string& line )
 				server.send_message_to_client( client, "PING :just a test\n" );
 		}
 	}
+}
+
+void MessageParser::execPING( Client& client, string& line )
+{
+	(void) client;
+	(void) line;
+}
+
+void MessageParser::execQUIT( Client& client, string& line )
+{
+	(void) client;
+	(void) line;
+}
+
+// example for copy paste
+void MessageParser::exec( Client& client, string& line )
+{
+	(void) client;
+	(void) line;
 }
