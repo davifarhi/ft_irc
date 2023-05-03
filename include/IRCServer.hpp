@@ -3,6 +3,7 @@
 #define IRCSERVER_H
 
 #include "debug.hpp"
+#include "answer.hpp"
 
 #include <string>
 #include <iostream>

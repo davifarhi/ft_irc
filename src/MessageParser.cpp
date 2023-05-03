@@ -105,6 +105,8 @@ void MessageParser::execPASS( Client& client, string& line )
 		if (DEBUG_PRINT_AUTHENTICATION)
 			cout << client << " has been succesfully authenticated\n";
 		client.authenticated = true;
+		cout << RPL_WELCOME(client.nickname) << "\n";
+		server.send_message_to_client(client, RPL_WELCOME(client.nickname));
 	}
 }
 
