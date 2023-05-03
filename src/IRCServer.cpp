@@ -193,7 +193,7 @@ void IRCServer::receive_message( Client& client )
 	}
 }
 
-void IRCServer::send_message_to_client( Client& client, string msg )
+void IRCServer::send_message_to_client( const Client& client, string msg )
 {
 	if (msg[msg.size() - 1] == '\n')
 		msg.erase(msg.size() - 1);
@@ -236,4 +236,14 @@ void IRCServer::delete_channel_if_empty( Channel* channel )
 {
 	if (channel->clients.size()) return;
 	channels.erase(*channel);
+}
+
+void IRCServer::send_msg_to_all( string msg, Client* exception )
+{
+	//performance problem, iterating through set
+	for (set<Client>::iterator it = clients.begin(); it != clients.end(); it++)
+	{
+		if (&(*it) != exception)
+			send_message_to_client( *it, msg );
+	}
 }

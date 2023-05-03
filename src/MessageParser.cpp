@@ -185,6 +185,7 @@ void MessageParser::execQUIT( Client& client, string& line )
 			break;
 		}
 	}
+	server.send_msg_to_all(CMD_CONFIRM( client.nickname, client.hostname, "QUIT", ":Quit: " + reason ));
 	server.send_message_to_client( client, "ERROR" );
 	//TODO (maybe) send message announcing Quit to all other users
 	//https://modern.ircdocs.horse/#quit-message

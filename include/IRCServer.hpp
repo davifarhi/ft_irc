@@ -70,7 +70,7 @@ class IRCServer
 
 		void run( void );
 
-		void send_message_to_client( Client& client, string msg );
+		void send_message_to_client( const Client& client, string msg );
 
 		const string& get_pswd( void ) const;
 		bool get_has_started( void ) const;
@@ -88,6 +88,8 @@ class IRCServer
 		void channel_add_user( Client& client, Channel& channel );
 		void print_channels( void );
 		void delete_channel_if_empty( Channel* channel );
+
+		void send_msg_to_all( string msg, Client* exception = 0 );
 };
 
 #endif /* end of include guard: IRCSERVER_H */
