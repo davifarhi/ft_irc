@@ -87,6 +87,7 @@ class IRCServer
 		void channel_remove_user( Client& client );
 		void channel_add_user( Client& client, Channel& channel );
 		void print_channels( void );
+		void delete_channel_if_empty( Channel* channel );
 };
 
 #endif /* end of include guard: IRCSERVER_H */

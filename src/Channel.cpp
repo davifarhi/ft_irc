@@ -37,6 +37,13 @@ void Channel::send_topic_to_client( Client& client, IRCServer& server ) const
 	server.send_message_to_client( client, RPL_TOPIC( client.nickname, name, topic ) );
 }
 
+void Channel::send_names_to_client( Client& client, IRCServer& server) const
+{
+	for (list<Client*>::const_iterator it = clients.begin(); it != clients.end(); it++)
+		server.send_message_to_client( client, RPL_NAMREPLY( client.nickname, name, (*it)->nickname ) );
+	server.send_message_to_client( client, RPL_ENDOFNAMES( client.nickname, name ) );
+}
+
 string Channel::trim_channel_name( const string& str )
 {
 	if (str[0] == '#')

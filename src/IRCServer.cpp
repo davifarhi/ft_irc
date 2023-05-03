@@ -170,13 +170,18 @@ void IRCServer::receive_message( Client& client )
 			break;
 		for (int i = 0; i < n; i++)
 		{
-			if (buf[i] == '\n' && (i == 0 || buf[i - 1] == '\r'))
+			//if (buf[i] == '\n' && (i == 0 || buf[i - 1] == '\r')) //this one ignore \n not preceded by \r
+			if (buf [i] == '\n')
 			{
 				// cleaning carriage returns in received text
-				line.erase(line.size() - 1);
-				if (DEBUG_PRINT_RECEIVED_MESSAGE)
-					cout << "RX " << client << ": " << line << endl;
-				msg_parser.parse( client, line );
+				if (line.size() > 1)
+				{
+					if (line[line.size() - 1] == '\r')
+						line.erase(line.size() - 1);
+					if (DEBUG_PRINT_RECEIVED_MESSAGE)
+						cout << "RX " << client << ": " << line << endl;
+					msg_parser.parse( client, line );
+				}
 				line.clear();
 			}
 			else
@@ -225,4 +230,10 @@ void IRCServer::print_channels( void )
 	{
 		cout << i++ << " " << it->name << " userN " << it->clients.size() << endl;
 	}
+}
+
+void IRCServer::delete_channel_if_empty( Channel* channel )
+{
+	if (channel->clients.size()) return;
+	channels.erase(*channel);
 }

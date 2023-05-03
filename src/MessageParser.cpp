@@ -204,9 +204,7 @@ void MessageParser::execJOIN( Client& client, string& line )
 		client.join_channel(chan);
 		server.send_message_to_client( client, ":" + client.nickname + " JOIN #" + chan.name );
 		chan.send_topic_to_client( client, server );
-		//TODO RPL_TOPIC
-		//TODO RPL_NAMREPLY
-		//TODO RPL_ENDOFNAMES
+		chan.send_names_to_client( client, server );
 		//TODO send JOIN message to all users in channel
 	}
 }
@@ -222,17 +220,18 @@ void MessageParser::execPART( Client& client, string& line )
 	Channel* chan;
 	if (!server.get_channel( words[1], &chan ))
 	{
-		//TODO ERR_NOSUCHCHANNEL
+		server.send_message_to_client( client, ERR_NOSUCHCHANNEL( client.nickname, words[1] ) );
 	}
 	else if (!client.is_in_channel(*chan))
 	{
-		//TODO ERR_NOTONCHANNEL
+		server.send_message_to_client( client, ERR_NOTONCHANNEL( client.nickname, words[1] ) );
 	}
 	else
 	{
 		chan->part_client(client);
 		client.part_channel(*chan);
-		server.send_message_to_client( client, ":" + client.nickname + " PART " + words[1] );
+		server.send_message_to_client( client, ":" + client.nickname + "@" + client.hostname + " PART " + words[1] );
+		server.delete_channel_if_empty( chan );
 		//TODO send PART message to all users in channel
 	}
 }

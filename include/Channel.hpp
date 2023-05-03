@@ -24,6 +24,7 @@ class Channel
 		void part_client( Client& client );
 
 		void send_topic_to_client( Client& client, IRCServer& server ) const;
+		void send_names_to_client( Client& client, IRCServer& server) const;
 
 		friend bool operator<( const Channel& lhs, const Channel& rhs );
 
