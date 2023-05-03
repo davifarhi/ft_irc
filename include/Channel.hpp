@@ -19,17 +19,13 @@ class Channel
 	public:
 		Channel( const string& name );
 
+		bool client_is_in_channel( Client& client ) const;
 		bool join_client( Client& client );
-		void part_client( const Client& client );
+		void part_client( Client& client );
 
 		friend bool operator<( const Channel& lhs, const Channel& rhs );
 
-		static string trim_channel_name( const string& str )
-		{
-			if (str[0] == '#')
-				return str.substr(1);
-			return str;
-		}
+		static string trim_channel_name( const string& str );
 };
 
 

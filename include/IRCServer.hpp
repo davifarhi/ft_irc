@@ -48,8 +48,6 @@ class IRCServer;
 
 #define BUFFER_SIZE 1024
 
-//TODO ping quit
-//TODO channels
 //TODO receive and send messages
 
 class IRCServer
@@ -84,6 +82,7 @@ class IRCServer
 		void send_message_to_client( Client& client, string msg );
 
 		Channel& get_channel( const string& name );
+		bool get_channel( const string& name, Channel** res );
 		void channel_remove_user( Client& client );
 		void channel_add_user( Client& client, Channel& channel );
 		void print_channels( void );

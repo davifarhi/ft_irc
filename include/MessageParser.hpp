@@ -35,6 +35,7 @@ class MessageParser
 		void execPING( Client& client, string& line );
 		void execQUIT( Client& client, string& line );
 		void execJOIN( Client& client, string& line );
+		void execPART( Client& client, string& line );
 
 		//example for copy paste
 		void exec( Client& client, string& line );

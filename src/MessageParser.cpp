@@ -18,6 +18,7 @@ void MessageParser::init( void )
 	cmd_list.push_back(client_cmd( string("PING"), &MessageParser::execPING ));
 	cmd_list.push_back(client_cmd( string("QUIT"), &MessageParser::execQUIT ));
 	cmd_list.push_back(client_cmd( string("JOIN"), &MessageParser::execJOIN ));
+	cmd_list.push_back(client_cmd( string("PART"), &MessageParser::execPART ));
 }
 
 void MessageParser::parse( Client& client, string& line )
@@ -200,12 +201,38 @@ void MessageParser::execJOIN( Client& client, string& line )
 	{
 		Channel& chan = server.get_channel(words[1]);
 		if (!chan.join_client(client)) return;
-		client.channels.insert(&chan);
+		client.join_channel(chan);
 		server.send_message_to_client( client, ":" + client.nickname + " JOIN #" + chan.name );
 		//TODO RPL_TOPIC
 		//TODO RPL_NAMREPLY
 		//TODO RPL_ENDOFNAMES
 		//TODO send JOIN message to all users in channel
+	}
+}
+
+void MessageParser::execPART( Client& client, string& line )
+{
+	vector<string> words = split_line(line);
+	if (words.size() < 2)
+	{
+		server.send_message_to_client( client, ERR_NEEDMOREPARAMS( client.nickname, "PART" ) );
+		return;
+	}
+	Channel* chan;
+	if (!server.get_channel( words[1], &chan ))
+	{
+		//TODO ERR_NOSUCHCHANNEL
+	}
+	else if (!client.is_in_channel(*chan))
+	{
+		//TODO ERR_NOTONCHANNEL
+	}
+	else
+	{
+		chan->part_client(client);
+		client.part_channel(*chan);
+		server.send_message_to_client( client, ":" + client.nickname + " PART " + words[1] );
+		//TODO send PART message to all users in channel
 	}
 }
 

@@ -211,6 +211,15 @@ Channel& IRCServer::get_channel( const string& name )
 	return const_cast<Channel&>(*channels.insert(name).first);
 }
 
+bool IRCServer::get_channel( const string& name, Channel** res )
+{
+	set<Channel>::iterator it = channels.find(name);
+	if (it == channels.end())
+		return false;
+	*res = const_cast<Channel*>(&(*it));
+	return true;
+}
+
 void IRCServer::print_channels( void )
 {
 	int i = 0;

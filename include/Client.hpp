@@ -30,6 +30,11 @@ class Client
 		Client( int fd );
 		Client( int fd, int port, const string &hostname );
 
+		bool is_in_channel( Channel& channel ) const;
+
+		void join_channel( Channel& channel );
+		void part_channel( Channel& channel );
+
 		friend bool operator<( const Client& lhs, const Client& rhs );
 		friend std::ostream& operator<<( std::ostream& os, const Client& c );
 		friend bool operator==( const pollfd& lhs, const Client& rhs );
