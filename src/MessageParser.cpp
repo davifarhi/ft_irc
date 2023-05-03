@@ -15,8 +15,9 @@ void MessageParser::init( void )
 	cmd_list.push_back(client_cmd( string("PASS"), &MessageParser::execPASS ));
 	cmd_list.push_back(client_cmd( string("NICK"), &MessageParser::execNICK ));
 	cmd_list.push_back(client_cmd( string("USER"), &MessageParser::execUSER ));
-	cmd_list.push_back(client_cmd( string("PING"), &MessageParser::execUSER ));
-	cmd_list.push_back(client_cmd( string("QUIT"), &MessageParser::execUSER ));
+	cmd_list.push_back(client_cmd( string("PING"), &MessageParser::execPING ));
+	cmd_list.push_back(client_cmd( string("QUIT"), &MessageParser::execQUIT ));
+	cmd_list.push_back(client_cmd( string("JOIN"), &MessageParser::execJOIN ));
 }
 
 void MessageParser::parse( Client& client, string& line )
@@ -24,7 +25,10 @@ void MessageParser::parse( Client& client, string& line )
 	for (vector<client_cmd>::iterator it = cmd_list.begin(); it != cmd_list.end(); it++)
 	{
 		if (line.rfind( it->cmd, 0 ) != line.npos)
+		{
 			(this->*(it->exec))(client, line);
+			return;
+		}
 	}
 }
 
@@ -123,7 +127,7 @@ void MessageParser::execNICK( Client& client, string& line )
 		}
 		if (DEBUG_PRINT_NICKNAME)
 			cout << client << " has changed nickname to " << words.back() << endl;
-		//server.send_message_to_client( client, client.nickname + " NICK " + words.back() + "\n" );
+		server.send_message_to_client( client, ":" + client.nickname + " NICK " + words.back() + "\n" );
 		client.nickname = words.back();
 		//TODO (maybe) send message announcing change to all other users
 		//https://modern.ircdocs.horse/#nick-message
@@ -172,6 +176,37 @@ void MessageParser::execQUIT( Client& client, string& line )
 	string reason = get_argument(line);
 	if (DEBUG_PRINT_CLIENT_QUIT)
 		cout << client << " quit the network, reason: " << reason << endl;
+	for (vector<pollfd>::iterator it = server.pfds.begin(); it != server.pfds.end(); it++)
+	{
+		if (it->fd == client.fd)
+		{
+			it->events = POLLHUP;
+			break;
+		}
+	}
+	server.send_message_to_client( client, "ERROR" );
+	//TODO (maybe) send message announcing Quit to all other users
+	//https://modern.ircdocs.horse/#quit-message
+}
+
+void MessageParser::execJOIN( Client& client, string& line )
+{
+	vector<string> words = split_line(line);
+	if (words.size() < 2)
+	{
+		server.send_message_to_client( client, ERR_NEEDMOREPARAMS( client.nickname, "JOIN" ) );
+	}
+	else
+	{
+		Channel& chan = server.get_channel(words[1]);
+		if (!chan.join_client(client)) return;
+		client.channels.insert(&chan);
+		server.send_message_to_client( client, ":" + client.nickname + " JOIN #" + chan.name );
+		//TODO RPL_TOPIC
+		//TODO RPL_NAMREPLY
+		//TODO RPL_ENDOFNAMES
+		//TODO send JOIN message to all users in channel
+	}
 }
 
 // example for copy paste

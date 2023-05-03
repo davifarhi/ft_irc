@@ -205,3 +205,17 @@ void IRCServer::send_message_to_client( Client& client, string msg )
 		if (msg.at(msg.size() - 1) != '\n') cout << endl;
 	}
 }
+
+Channel& IRCServer::get_channel( const string& name )
+{
+	return const_cast<Channel&>(*channels.insert(name).first);
+}
+
+void IRCServer::print_channels( void )
+{
+	int i = 0;
+	for (set<Channel>::iterator it = channels.begin(); it != channels.end(); it++)
+	{
+		cout << i++ << " " << it->name << " userN " << it->clients.size() << endl;
+	}
+}

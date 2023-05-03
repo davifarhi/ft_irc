@@ -19,6 +19,7 @@
 #include <cstring>
 #include <vector>
 #include <set>
+#include <list>
 #include <algorithm>
 
 #ifndef LINUX_OS
@@ -34,11 +35,14 @@ using std::endl;
 using std::string;
 using std::vector;
 using std::set;
+using std::list;
 
 class Client;
 class MessageParser;
+class Channel;
 class IRCServer;
 
+#include "Channel.hpp"
 #include "MessageParser.hpp"
 #include "Client.hpp"
 
@@ -58,6 +62,9 @@ class IRCServer
 		int sockfd;
 		vector<pollfd> pfds;
 		set<Client> clients;
+		set<Channel> channels;
+
+		friend class MessageParser;
 
 	public:
 		IRCServer( int port, string pswd );
@@ -76,7 +83,10 @@ class IRCServer
 		void receive_message( Client& client );
 		void send_message_to_client( Client& client, string msg );
 
-		friend class MessageParser;
+		Channel& get_channel( const string& name );
+		void channel_remove_user( Client& client );
+		void channel_add_user( Client& client, Channel& channel );
+		void print_channels( void );
 };
 
 #endif /* end of include guard: IRCSERVER_H */
