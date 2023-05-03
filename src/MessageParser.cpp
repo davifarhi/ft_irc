@@ -50,9 +50,6 @@ vector<string> MessageParser::split_line( const string& line ) const
 	return words;
 }
 
-#define PASSWDERROR(client) (client ": Password doesn't match")
-		//cout << PASSWDERROR("test") << endl;
-
 void MessageParser::execCAP( Client& client, string& line )
 {
 	if (find_text(line, "LS"))
@@ -72,10 +69,12 @@ void MessageParser::execCAP( Client& client, string& line )
 	else if (find_text(line, "END"))
 	{
 		client.on_cap_negotiation = false;
-		server.send_message_to_client(client, RPL_WELCOME(client.nickname));
-		//server.send_message_to_client( client, "001: dfarhi :Welcome to the network\n" );
-		if (DEBUG_PING_CLIENT)
-			server.send_message_to_client( client, "PING :just a test\n" );
+		if (client.registered)
+		{
+			server.send_message_to_client(client, RPL_WELCOME(client.nickname));
+			if (DEBUG_PING_CLIENT)
+				server.send_message_to_client( client, "PING :just a test\n" );
+		}
 	}
 }
 
@@ -84,30 +83,21 @@ void MessageParser::execPASS( Client& client, string& line )
 	vector<string> words = split_line(line);
 	if (words.size() < 2)
 	{
-		cout << "ERR_NEEDMOREPARAMS\n";
-		//ERR_NEEDMOREPARAMS
+		server.send_message_to_client( client, ERR_NEEDMOREPARAMS( client.nickname, "PASS" ) );
 	}
 	else if (client.authenticated)
 	{
-		cout << "ERR_ALREADYREGISTERED\n";
-		//ERR_ALREADYREGISTERED
+		server.send_message_to_client( client, ERR_ALREADYREGISTERED(client.nickname) );
 	}
 	else if (words.back() != server.get_pswd())
 	{
-		cout << "'" << words.back() << "'\n'" << server.get_pswd() << "'\n";
-		cout << (int)words.back().at(4) << endl;
-		cout << "ERR_PASSWDMISMATCH\n";
-		if (words.back().size() != server.get_pswd().size())
-			cout << words.back().size() << " " << server.get_pswd().size() << " diferent sizes\n";
-		//ERR_PASSWDMISMATCH
+		server.send_message_to_client( client, ERR_PASSWDMISMATCH(client.nickname) );
 	}
 	else
 	{
 		if (DEBUG_PRINT_AUTHENTICATION)
 			cout << client << " has been succesfully authenticated\n";
 		client.authenticated = true;
-		cout << RPL_WELCOME(client.nickname) << "\n";
-//		server.send_message_to_client(client, RPL_WELCOME(client.nickname));
 	}
 }
 
@@ -116,7 +106,7 @@ void MessageParser::execNICK( Client& client, string& line )
 	vector<string> words = split_line(line);
 	if (words.size() < 2)
 	{
-		cout << "ERR_NONICKNAMEGIVEN\n";
+		server.send_message_to_client( client, ERR_NONICKNAMEGIVEN(client.nickname) );
 	}
 	else
 	{
@@ -125,13 +115,13 @@ void MessageParser::execNICK( Client& client, string& line )
 		{
 			if (it->nickname == words.back())
 			{
-				cout << "ERR_NICKNAMEINUSE\n";
+				server.send_message_to_client( client, ERR_NICKNAMEINUSE(client.nickname) );
 				return;
 			}
 		}
 		if (DEBUG_PRINT_NICKNAME)
 			cout << client << " has changed nickname to " << words.back() << endl;
-		server.send_message_to_client( client, client.nickname + " NICK " + words.back() + "\n" );
+		//server.send_message_to_client( client, client.nickname + " NICK " + words.back() + "\n" );
 		client.nickname = words.back();
 		//TODO (maybe) send message announcing change to all other users
 		//https://modern.ircdocs.horse/#nick-message
@@ -143,11 +133,11 @@ void MessageParser::execUSER( Client& client, string& line )
 	vector<string> words = split_line(line);
 	if (words.size() < 5)
 	{
-		cout << "ERR_NEEDMOREPARAMS\n";
+		server.send_message_to_client( client, ERR_NEEDMOREPARAMS( client.nickname, "USER" ) );
 	}
 	else if (client.registered)
 	{
-		cout << "ERR_ALREADYREGISTERED\n";
+		server.send_message_to_client( client, ERR_ALREADYREGISTERED(client.nickname) );
 	}
 	else
 	{
@@ -156,5 +146,11 @@ void MessageParser::execUSER( Client& client, string& line )
 		client.registered = true;
 		if (DEBUG_PRINT_USER_REAL_NAME)
 			cout << client << " registered with name " << client.username << " and real name " << client.realname << endl;
+		if (!client.on_cap_negotiation)
+		{
+			server.send_message_to_client(client, RPL_WELCOME(client.nickname));
+			if (DEBUG_PING_CLIENT)
+				server.send_message_to_client( client, "PING :just a test\n" );
+		}
 	}
 }

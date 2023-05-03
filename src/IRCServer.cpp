@@ -192,6 +192,8 @@ void IRCServer::receive_message( Client& client )
 
 void IRCServer::send_message_to_client( Client& client, string msg )
 {
+	if (msg[msg.size() - 1] != '\n')
+		msg += '\n';
 	if (send( client.fd, msg.c_str(), msg.size(), 0) == -1)
 	{
 		cerr << "IRCServer::send_message_to_client: send() error: " << strerror(errno) << endl;
