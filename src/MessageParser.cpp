@@ -203,6 +203,7 @@ void MessageParser::execJOIN( Client& client, string& line )
 		if (!chan.join_client(client)) return;
 		client.join_channel(chan);
 		server.send_message_to_client( client, ":" + client.nickname + " JOIN #" + chan.name );
+		chan.send_topic_to_client( client, server );
 		//TODO RPL_TOPIC
 		//TODO RPL_NAMREPLY
 		//TODO RPL_ENDOFNAMES

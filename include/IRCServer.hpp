@@ -70,6 +70,8 @@ class IRCServer
 
 		void run( void );
 
+		void send_message_to_client( Client& client, string msg );
+
 		const string& get_pswd( void ) const;
 		bool get_has_started( void ) const;
 
@@ -79,7 +81,6 @@ class IRCServer
 		void client_connect( void );
 		vector<pollfd>::iterator client_disconnect( int fd );
 		void receive_message( Client& client );
-		void send_message_to_client( Client& client, string msg );
 
 		Channel& get_channel( const string& name );
 		bool get_channel( const string& name, Channel** res );
