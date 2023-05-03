@@ -27,6 +27,13 @@ void Client::part_channel( Channel& channel )
 	channels.erase(&channel);
 }
 
+void Client::leave_all_channels( void )
+{
+	for (set<Channel*>::iterator it = channels.begin(); it != channels.end(); it++)
+		(*it)->part_client(const_cast<Client&>(*this));
+	channels.clear();
+}
+
 bool operator<( const Client& lhs, const Client& rhs ) { return (lhs.fd < rhs.fd); }
 
 std::ostream& operator<<( std::ostream& os, const Client& c )

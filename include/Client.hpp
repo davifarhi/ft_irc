@@ -35,6 +35,8 @@ class Client
 		void join_channel( Channel& channel );
 		void part_channel( Channel& channel );
 
+		void leave_all_channels( void );
+
 		friend bool operator<( const Client& lhs, const Client& rhs );
 		friend std::ostream& operator<<( std::ostream& os, const Client& c );
 		friend bool operator==( const pollfd& lhs, const Client& rhs );
