@@ -9,5 +9,6 @@
 #define DEBUG_PRINT_NICKNAME 0
 #define DEBUG_PRINT_USER_REAL_NAME 0
 #define DEBUG_PING_CLIENT 1
+#define DEBUG_PRINT_CLIENT_QUIT 1
 
 #endif /* end of include guard: DEBUG_H */

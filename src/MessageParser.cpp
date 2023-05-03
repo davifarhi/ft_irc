@@ -159,14 +159,19 @@ void MessageParser::execUSER( Client& client, string& line )
 
 void MessageParser::execPING( Client& client, string& line )
 {
-	(void) client;
-	(void) line;
+	vector<string> words = split_line(line);
+	string msg("PONG");
+	if (words.size() > 1)
+		for (vector<string>::iterator it = ++words.begin(); it != words.end(); it++)
+			msg += " " + *it;
+	server.send_message_to_client( client, msg + '\n' );
 }
 
 void MessageParser::execQUIT( Client& client, string& line )
 {
-	(void) client;
-	(void) line;
+	string reason = get_argument(line);
+	if (DEBUG_PRINT_CLIENT_QUIT)
+		cout << client << " quit the network, reason: " << reason << endl;
 }
 
 // example for copy paste
