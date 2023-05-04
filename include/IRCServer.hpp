@@ -48,8 +48,6 @@ class IRCServer;
 
 #define BUFFER_SIZE 1024
 
-//TODO receive and send messages
-
 class IRCServer
 {
 	private:
