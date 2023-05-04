@@ -41,13 +41,14 @@ void IRCServer::run( void )
 		}
 		for (vector<pollfd>::iterator it = ++pfds.begin(); it != pfds.end(); it++)
 		{
-			if (it->revents &POLLIN)
-			{
-				receive_message(const_cast<Client&>(*clients.find(it->fd)));
-			}
 			if (it->revents &POLLHUP)
 			{
 				it = --client_disconnect(it->fd);
+				continue;
+			}
+			if (it->revents &POLLIN)
+			{
+				receive_message(const_cast<Client&>(*clients.find(it->fd)));
 			}
 		}
 	}
@@ -139,6 +140,7 @@ void IRCServer::client_connect( void )
 
 vector<pollfd>::iterator IRCServer::client_disconnect( int fd )
 {
+	//TODO remove from channels
 	{
 		set<Client>::iterator client = clients.find(fd);
 		if (DEBUG_CLIENT_CONNECTION)
