@@ -29,13 +29,14 @@ bool Channel::join_client( Client& client )
 
 void Channel::part_client( Client& client )
 {
-	//TODO remove from chan_ops
-	//if last chan_ops, first clients is chan_ops
+	chan_ops.erase(&client);
 	for (list<Client*>::iterator it = clients.begin(); it != clients.end(); it++)
 	{
 		if (*it == &client)
 			it = --clients.erase(it);
 	}
+	if (chan_ops.empty() && !clients.empty())
+		chan_ops.insert(clients.front());
 }
 
 void Channel::send_topic_to_client( Client& client, IRCServer& server ) const
