@@ -121,7 +121,7 @@ void MessageParser::execNICK( Client& client, string& line )
 		// bad for performance, iterating through set
 		if (server.get_user( words.back(), 0 ))
 		{
-			server.send_message_to_client( client, ERR_NICKNAMEINUSE(client.nickname) );
+			server.send_message_to_client( client, ERR_NICKNAMEINUSE( client.nickname, words.back() ) );
 			return;
 		}
 		if (DEBUG_PRINT_NICKNAME)
