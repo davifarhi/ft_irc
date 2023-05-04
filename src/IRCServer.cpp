@@ -193,6 +193,21 @@ void IRCServer::receive_message( Client& client )
 	}
 }
 
+bool IRCServer::get_user( const string& name, Client** res )
+{
+	// bad for performance, iterating through set
+	for (set<Client>::iterator it = clients.begin(); it != clients.end(); it++)
+	{
+		if (it->nickname == name)
+		{
+			if (res)
+				*res = const_cast<Client*>(&(*it));
+			return true;
+		}
+	}
+	return false;
+}
+
 void IRCServer::send_message_to_client( const Client& client, string msg )
 {
 	if (msg[msg.size() - 1] == '\n')
