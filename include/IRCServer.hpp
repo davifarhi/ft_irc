@@ -19,6 +19,7 @@
 #include <cstring>
 #include <vector>
 #include <set>
+#include <map>
 #include <list>
 #include <algorithm>
 
@@ -35,6 +36,7 @@ using std::endl;
 using std::string;
 using std::vector;
 using std::set;
+using std::map;
 using std::list;
 
 class Client;
@@ -59,6 +61,7 @@ class IRCServer
 		vector<pollfd> pfds;
 		set<Client> clients;
 		set<Channel> channels;
+		map<int,string> receive_buf;
 
 		friend class MessageParser;
 

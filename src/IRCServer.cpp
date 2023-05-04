@@ -164,9 +164,7 @@ vector<pollfd>::iterator IRCServer::client_disconnect( int fd )
 void IRCServer::receive_message( Client& client )
 {
 	char buf[BUFFER_SIZE];
-	//TODO map string vector per fd
-	//TODO remove on disconnect
-	static string line;
+	string& line = receive_buf[client.fd];
 	while (true)
 	{
 #ifdef LINUX_OS
