@@ -19,6 +19,7 @@ void MessageParser::init( void )
 	cmd_list.push_back(client_cmd( string("QUIT"), &MessageParser::execQUIT ));
 	cmd_list.push_back(client_cmd( string("JOIN"), &MessageParser::execJOIN ));
 	cmd_list.push_back(client_cmd( string("PART"), &MessageParser::execPART ));
+	cmd_list.push_back(client_cmd( string("PRIVMSG"), &MessageParser::execPRIVMSG ));
 }
 
 void MessageParser::parse( Client& client, string& line )
@@ -118,13 +119,10 @@ void MessageParser::execNICK( Client& client, string& line )
 	else
 	{
 		// bad for performance, iterating through set
-		for (set<Client>::iterator it = server.clients.begin(); it != server.clients.end(); it++)
+		if (server.get_user( words.back(), 0 ))
 		{
-			if (it->nickname == words.back())
-			{
-				server.send_message_to_client( client, ERR_NICKNAMEINUSE(client.nickname) );
-				return;
-			}
+			server.send_message_to_client( client, ERR_NICKNAMEINUSE(client.nickname) );
+			return;
 		}
 		if (DEBUG_PRINT_NICKNAME)
 			cout << client << " has changed nickname to " << words.back() << endl;
@@ -229,6 +227,47 @@ void MessageParser::execPART( Client& client, string& line )
 		chan->part_client(client);
 		client.part_channel(*chan);
 		server.delete_channel_if_empty( chan );
+	}
+}
+
+void MessageParser::execPRIVMSG( Client& client, string& line )
+{
+	vector<string> words = split_line(line.substr( 0, line.find(':') ));
+	string msg = get_argument(line);
+	if (words.size() < 2)
+	{
+		server.send_message_to_client( client, ERR_NORECIPIENT( client.nickname, "PRIVMSG" ) );
+	}
+	else if (words.size() > 2)
+	{
+		server.send_message_to_client( client, ERR_TOOMANYTARGETS( client.nickname, "PRIVMSG" ) );
+		cout << words.size() << " args received\n";
+	}
+	else if (!msg.size())
+	{
+		server.send_message_to_client( client, ERR_NOTEXTTOSEND(client.nickname) );
+	}
+	else
+	{
+		if (words[1][0] == '#')
+		{
+			Channel* chan;
+			if (server.get_channel( words[1], &chan ))
+			{
+				chan->send_msg_to_all( PRIVMSG_CHAN( client.nickname, client.hostname, chan->name, msg ), server, &client );
+				return;
+			}
+		}
+		else
+		{
+			Client* user;
+			if (server.get_user( words[1], &user ))
+			{
+				server.send_message_to_client( *user, PRIVMSG_USER( client.nickname, client.hostname, user->nickname, msg ) );
+				return;
+			}
+		}
+		server.send_message_to_client( client, ERR_NOSUCHCHANNEL( client.nickname, words.back() ) );
 	}
 }
 
