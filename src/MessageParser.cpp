@@ -128,10 +128,8 @@ void MessageParser::execNICK( Client& client, string& line )
 		}
 		if (DEBUG_PRINT_NICKNAME)
 			cout << client << " has changed nickname to " << words.back() << endl;
-		server.send_message_to_client( client, ":" + client.nickname + " NICK " + words.back() + "\n" );
+		server.send_msg_to_all(CMD_CONFIRM( client.nickname, client.hostname, "NICK", words.back() ));
 		client.nickname = words.back();
-		//TODO (maybe) send message announcing change to all other users
-		//https://modern.ircdocs.horse/#nick-message
 	}
 }
 
@@ -185,9 +183,9 @@ void MessageParser::execQUIT( Client& client, string& line )
 			break;
 		}
 	}
+	client.leave_all_channels();
+	server.send_msg_to_all(CMD_CONFIRM( client.nickname, client.hostname, "QUIT", ":Quit: " + reason ));
 	server.send_message_to_client( client, "ERROR" );
-	//TODO (maybe) send message announcing Quit to all other users
-	//https://modern.ircdocs.horse/#quit-message
 }
 
 void MessageParser::execJOIN( Client& client, string& line )
