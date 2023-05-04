@@ -82,6 +82,8 @@ class IRCServer
 		vector<pollfd>::iterator client_disconnect( int fd );
 		void receive_message( Client& client );
 
+		bool get_user( const string& name, Client** res );
+
 		Channel& get_channel( const string& name );
 		bool get_channel( const string& name, Channel** res );
 		void channel_remove_user( Client& client );
