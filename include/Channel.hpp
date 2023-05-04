@@ -10,8 +10,13 @@ class Channel
 {
 	private:
 		list<Client*> clients;
+		set<Client*> chan_ops;
+//TODO		set<Client*> invited;
 		string name;
 		string topic;
+
+		bool has_password;
+		string password;
 
 		friend class IRCServer;
 		friend class MessageParser;
@@ -27,6 +32,8 @@ class Channel
 		void send_names_to_client( Client& client, IRCServer& server) const;
 
 		void send_msg_to_all( string msg, IRCServer& server, Client* exception = 0 );
+
+		bool try_password( const string& pswd ) const;
 
 		friend bool operator<( const Channel& lhs, const Channel& rhs );
 

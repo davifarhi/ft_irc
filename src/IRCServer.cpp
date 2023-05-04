@@ -157,8 +157,9 @@ vector<pollfd>::iterator IRCServer::client_disconnect( int fd )
 void IRCServer::receive_message( Client& client )
 {
 	char buf[BUFFER_SIZE];
-	//memset(buf, 0, BUFFER_SIZE);
-	string line;
+	//TODO map string vector per fd
+	//TODO remove on disconnect
+	static string line;
 	while (true)
 	{
 #ifdef LINUX_OS
@@ -189,7 +190,6 @@ void IRCServer::receive_message( Client& client )
 				line.push_back(buf[i]);
 			}
 		}
-		//memset(buf, 0, n);
 	}
 }
 

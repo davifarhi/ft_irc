@@ -3,6 +3,8 @@
 Channel::Channel( const string& name ) : name(Channel::trim_channel_name(name))
 {
 	topic = this->name + " channel has no topic set";
+	password = "";
+	has_password = false;
 }
 
 bool operator<( const Channel& lhs, const Channel& rhs )
@@ -19,12 +21,16 @@ bool Channel::join_client( Client& client )
 {
 	if (client_is_in_channel(client))
 		return false;
+	if (!clients.size())
+		chan_ops.insert(&client);
 	clients.push_back(&client);
 	return true;
 }
 
 void Channel::part_client( Client& client )
 {
+	//TODO remove from chan_ops
+	//if last chan_ops, first clients is chan_ops
 	for (list<Client*>::iterator it = clients.begin(); it != clients.end(); it++)
 	{
 		if (*it == &client)
@@ -51,6 +57,13 @@ void Channel::send_msg_to_all( string msg, IRCServer& server, Client* exception 
 		if (*it != exception)
 			server.send_message_to_client( **it, msg );
 	}
+}
+
+bool Channel::try_password( const string& pswd ) const
+{
+	if (!has_password)
+		return true;
+	return pswd == password;
 }
 
 string Channel::trim_channel_name( const string& str )

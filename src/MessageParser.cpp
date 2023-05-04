@@ -196,6 +196,11 @@ void MessageParser::execJOIN( Client& client, string& line )
 	else
 	{
 		Channel& chan = server.get_channel(words[1]);
+		if (!chan.try_password((words.size() > 2 ? words[2] : "")))
+		{
+			server.send_message_to_client( client, ERR_BADCHANNELKEY( client.nickname, words[1] ) );
+			return;
+		}
 		if (!chan.join_client(client)) return;
 		client.join_channel(chan);
 		chan.send_msg_to_all( CMD_CONFIRM( client.nickname, client.hostname, "JOIN", "#" + chan.name ), server );
@@ -224,6 +229,7 @@ void MessageParser::execPART( Client& client, string& line )
 	else
 	{
 		chan->send_msg_to_all( CMD_CONFIRM( client.nickname, client.hostname, "PART", "#" + chan->name ), server );
+		//reference for KICK
 		chan->part_client(client);
 		client.part_channel(*chan);
 		server.delete_channel_if_empty( chan );
