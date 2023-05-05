@@ -4,12 +4,9 @@ Channel::Channel( const string& name ) : name(Channel::trim_channel_name(name))
 {
 	topic = this->name + " channel has no topic set";
 	password = "";
+	invite_only = false;
+	user_limit = default_user_limit();
 	has_password = false;
-}
-
-bool operator<( const Channel& lhs, const Channel& rhs )
-{
-	return (lhs.name < rhs.name);
 }
 
 bool Channel::client_is_in_channel( Client& client ) const
@@ -65,6 +62,30 @@ bool Channel::try_password( const string& pswd ) const
 	if (!has_password)
 		return true;
 	return pswd == password;
+}
+
+bool Channel::user_is_invited( Client & client ) const
+{
+	if (invite_only && invited.find(&client) == invited.end())
+		return false;
+	return true;
+}
+
+bool Channel::is_there_space_for_newuser( void ) const
+{
+	if (clients.size() < user_limit + 1)
+		return true;
+	return false;
+}
+
+size_t Channel::default_user_limit( void ) const
+{
+	return clients.max_size();
+}
+
+bool operator<( const Channel& lhs, const Channel& rhs )
+{
+	return (lhs.name < rhs.name);
 }
 
 string Channel::trim_channel_name( const string& str )

@@ -204,6 +204,16 @@ void MessageParser::execJOIN( Client& client, string& line )
 			server.send_message_to_client( client, ERR_BADCHANNELKEY( client.nickname, words[1] ) );
 			return;
 		}
+		if (!chan.user_is_invited(client))
+		{
+			server.send_message_to_client( client, ERR_INVITEONLYCHAN( client.nickname, words[1]) );
+			return;
+		}
+		if (!chan.is_there_space_for_newuser())
+		{
+			server.send_message_to_client( client, ERR_CHANNELISFULL( client.nickname, words[1]) );
+			return;
+		}
 		if (!chan.join_client(client)) return;
 		client.join_channel(chan);
 		chan.send_msg_to_all( CMD_CONFIRM( client.nickname, client.hostname, "JOIN", "#" + chan.name ), server );
