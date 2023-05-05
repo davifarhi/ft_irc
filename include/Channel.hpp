@@ -38,6 +38,8 @@ class Channel
 		friend bool operator<( const Channel& lhs, const Channel& rhs );
 
 		static string trim_channel_name( const string& str );
+	
+		void change_topic_of_channel( const string str);
 };
 
 

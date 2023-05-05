@@ -72,3 +72,8 @@ string Channel::trim_channel_name( const string& str )
 		return str.substr(1);
 	return str;
 }
+
+void Channel::change_topic_of_channel( const string str )
+{
+	topic = this->name + " " + str;
+}

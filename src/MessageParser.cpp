@@ -20,6 +20,7 @@ void MessageParser::init( void )
 	cmd_list.push_back(client_cmd( string("JOIN"), &MessageParser::execJOIN ));
 	cmd_list.push_back(client_cmd( string("PART"), &MessageParser::execPART ));
 	cmd_list.push_back(client_cmd( string("PRIVMSG"), &MessageParser::execPRIVMSG ));
+	cmd_list.push_back(client_cmd( string("TOPIC"), &MessageParser::execTopic));
 }
 
 void MessageParser::parse( Client& client, string& line )
@@ -282,4 +283,45 @@ void MessageParser::exec( Client& client, string& line )
 {
 	(void) client;
 	(void) line;
+}
+
+void MessageParser::execTopic( Client& client, string& line)
+{
+	if (!line.find(":"))
+	{
+		vector<string> words = split_line(line);
+		Channel* chan;
+		if (!server.get_channel( words[1], &chan ))
+		{
+			server.send_message_to_client( client, ERR_NOSUCHCHANNEL( client.nickname, words[1] ) );
+		}
+		else if (!client.is_in_channel(*chan))
+		{
+			server.send_message_to_client( client, ERR_NOTONCHANNEL( client.nickname, words[1] ) );
+		}
+		else
+		{
+			Channel& chan = server.get_channel(words[1]);
+			chan.send_topic_to_client( client, server );
+		}
+	}
+	else
+	{
+		vector<string> words = split_line(line);
+		Channel* chan;
+		if (!server.get_channel( words[1], &chan ))
+		{
+			server.send_message_to_client( client, ERR_NOSUCHCHANNEL( client.nickname, words[1] ) );
+		}
+		else if (!client.is_in_channel(*chan))
+		{
+			server.send_message_to_client( client, ERR_NOTONCHANNEL( client.nickname, words[1] ) );
+		}
+		if (words.size() > 2)
+		{
+			Channel& chan = server.get_channel(words[1]);
+			chan.change_topic_of_channel(line.substr((line.find(':')) + 2));
+			chan.send_topic_to_client( client, server );//je comprend pas pourquoi ca marche pas sans ca 
+		}
+	}
 }
