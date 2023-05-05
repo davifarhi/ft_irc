@@ -2,7 +2,7 @@
 
 Channel::Channel( const string& name ) : name(Channel::trim_channel_name(name))
 {
-	topic = this->name + " channel has no topic set";
+	topic = "";
 	password = "";
 	invite_only = false;
 	user_limit = default_user_limit();
@@ -38,7 +38,8 @@ void Channel::part_client( Client& client )
 
 void Channel::send_topic_to_client( Client& client, IRCServer& server ) const
 {
-	server.send_message_to_client( client, RPL_TOPIC( client.nickname, name, topic ) );
+	if (topic.size())
+		server.send_message_to_client( client, RPL_TOPIC( client.nickname, name, topic ) );
 }
 
 void Channel::send_names_to_client( Client& client, IRCServer& server) const
