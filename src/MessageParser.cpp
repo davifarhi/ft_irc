@@ -179,7 +179,7 @@ void MessageParser::execQUIT( Client& client, string& line )
 	client.leave_all_channels();
 	server.send_msg_to_all(CMD_CONFIRM( client.nickname, client.hostname, "QUIT", ":Quit: " + reason ));
 	server.send_message_to_client( client, "ERROR" );
-	server.fds_to_disconnect.push_back(client.fd);
+	server.fds_to_disconnect.push(client.fd);
 }
 
 void MessageParser::execJOIN( Client& client, string& line )

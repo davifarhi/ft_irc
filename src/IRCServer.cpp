@@ -29,10 +29,10 @@ void IRCServer::run( void )
 	pfds.push_back(pfd_construct(sockfd, POLLIN | POLLPRI, 0));
 	while (running)
 	{
-		while (fds_to_disconnect.size())
+		while (!fds_to_disconnect.empty())
 		{
-			client_disconnect(fds_to_disconnect.back());
-			fds_to_disconnect.pop_back();
+			client_disconnect(fds_to_disconnect.top());
+			fds_to_disconnect.pop();
 		}
 
 		int p;
