@@ -176,17 +176,10 @@ void MessageParser::execQUIT( Client& client, string& line )
 	string reason = get_argument(line);
 	if (DEBUG_PRINT_CLIENT_QUIT)
 		cout << client << " quit the network, reason: " << reason << endl;
-	for (vector<pollfd>::iterator it = server.pfds.begin(); it != server.pfds.end(); it++)
-	{
-		if (it->fd == client.fd)
-		{
-			it->events = POLLHUP;
-			break;
-		}
-	}
 	client.leave_all_channels();
 	server.send_msg_to_all(CMD_CONFIRM( client.nickname, client.hostname, "QUIT", ":Quit: " + reason ));
 	server.send_message_to_client( client, "ERROR" );
+	server.fds_to_disconnect.push_back(client.fd);
 }
 
 void MessageParser::execJOIN( Client& client, string& line )

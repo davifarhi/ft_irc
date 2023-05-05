@@ -29,6 +29,12 @@ void IRCServer::run( void )
 	pfds.push_back(pfd_construct(sockfd, POLLIN | POLLPRI, 0));
 	while (running)
 	{
+		while (fds_to_disconnect.size())
+		{
+			client_disconnect(fds_to_disconnect.back());
+			fds_to_disconnect.pop_back();
+		}
+
 		int p;
 		if ((p = poll( &(*pfds.begin()), pfds.size(), 0 )) == -1)
 			cerr << "IRCServer::run: poll() error: " << strerror(errno) << endl;
@@ -157,7 +163,10 @@ vector<pollfd>::iterator IRCServer::client_disconnect( int fd )
 	{
 		cerr << "IRCServer::client_disconnect: error client missing in pollfd vector\n";
 	}
-	close(fd);
+	if (close(fd) == -1)
+	{
+		cerr << "IRCServer::client_disconnect: close() error " << strerror(errno) << endl;
+	}
 	return pfds.erase(client);
 }
 

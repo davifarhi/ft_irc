@@ -61,6 +61,7 @@ class IRCServer
 		vector<pollfd> pfds;
 		set<Client> clients;
 		set<Channel> channels;
+		vector<int> fds_to_disconnect;
 		map<int,string> receive_buf;
 
 		friend class MessageParser;
