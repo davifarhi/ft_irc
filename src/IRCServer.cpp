@@ -29,6 +29,12 @@ void IRCServer::run( void )
 	pfds.push_back(pfd_construct(sockfd, POLLIN | POLLPRI, 0));
 	while (running)
 	{
+		while (!fds_to_disconnect.empty())
+		{
+			client_disconnect(fds_to_disconnect.top());
+			fds_to_disconnect.pop();
+		}
+
 		int p;
 		if ((p = poll( &(*pfds.begin()), pfds.size(), 0 )) == -1)
 			cerr << "IRCServer::run: poll() error: " << strerror(errno) << endl;
@@ -140,28 +146,34 @@ void IRCServer::client_connect( void )
 
 vector<pollfd>::iterator IRCServer::client_disconnect( int fd )
 {
-	//TODO remove from channels
+	set<Client>::iterator client_it = clients.find(fd);
+	if (client_it != clients.end())
 	{
-		set<Client>::iterator client = clients.find(fd);
+		//bad for performance, iterating throught set
+		for (set<Channel*>::iterator it = client_it->channels.begin(); it != client_it->channels.end(); it++)
+		{
+			(*it)->part_client(const_cast<Client&>(*client_it));
+		}
 		if (DEBUG_CLIENT_CONNECTION)
-			cout << "client disconnected: " << *client << endl;
-		clients.erase(client);
+			cout << "client disconnected: " << *client_it << endl;
+		clients.erase(client_it);
 	}
 	vector<pollfd>::iterator client = std::find( pfds.begin(), pfds.end(), Client(fd) );
 	if (client == pfds.end())
 	{
 		cerr << "IRCServer::client_disconnect: error client missing in pollfd vector\n";
 	}
-	close(fd);
+	if (close(fd) == -1)
+	{
+		cerr << "IRCServer::client_disconnect: close() error " << strerror(errno) << endl;
+	}
 	return pfds.erase(client);
 }
 
 void IRCServer::receive_message( Client& client )
 {
 	char buf[BUFFER_SIZE];
-	//TODO map string vector per fd
-	//TODO remove on disconnect
-	static string line;
+	string& line = receive_buf[client.fd];
 	while (true)
 	{
 #ifdef LINUX_OS

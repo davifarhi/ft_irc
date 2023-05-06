@@ -15,6 +15,8 @@
 #define ERR_NOSUCHCHANNEL(client, channel)	"403 " + client + " " + channel + " :No such channel"
 #define ERR_NOTONCHANNEL(client, channel)	"442 " + client + " " + channel + " :You're not on that channel"
 #define ERR_BADCHANNELKEY(client, channel)	"475 " + client + " " + channel + " :Cannot join channel (+k)"
+#define ERR_INVITEONLYCHAN(client, channel)	"473 " + client + " " + channel + " :Cannot join channel (+i)"
+#define ERR_CHANNELISFULL(client, channel)	"471 " + client + " " + channel + " :Cannot join channel (+l)"
 
 #define ERR_NOSUCHNICK(client, channel)		"401 " + client + " " + channel + " :No such nick/channel"
 #define ERR_NORECIPIENT(client, command)	"411 " + client + " :No recipient given " + command
