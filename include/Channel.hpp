@@ -11,9 +11,13 @@ class Channel
 	private:
 		list<Client*> clients;
 		set<Client*> chan_ops;
-//TODO		set<Client*> invited;
+		set<Client*> invited;
+
 		string name;
 		string topic;
+
+		bool invite_only;
+		size_t user_limit;
 
 		bool has_password;
 		string password;
@@ -34,6 +38,10 @@ class Channel
 		void send_msg_to_all( string msg, IRCServer& server, Client* exception = 0 );
 
 		bool try_password( const string& pswd ) const;
+		bool user_is_invited ( Client & client ) const;
+		bool is_there_space_for_newuser( void ) const;
+
+		size_t default_user_limit( void ) const;
 
 		friend bool operator<( const Channel& lhs, const Channel& rhs );
 

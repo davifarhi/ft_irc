@@ -43,7 +43,10 @@ bool MessageParser::find_text( string& line, string to_find ) const
 
 string MessageParser::get_argument( string& line ) const
 {
-	return line.substr(line.find(':')).erase(0, 1);
+	size_t pos = line.find(':');
+	if (pos == line.npos)
+		return "";
+	return line.substr(pos).erase(0, 1);
 }
 
 vector<string> MessageParser::split_line( const string& line ) const
@@ -175,23 +178,16 @@ void MessageParser::execQUIT( Client& client, string& line )
 	string reason = get_argument(line);
 	if (DEBUG_PRINT_CLIENT_QUIT)
 		cout << client << " quit the network, reason: " << reason << endl;
-	for (vector<pollfd>::iterator it = server.pfds.begin(); it != server.pfds.end(); it++)
-	{
-		if (it->fd == client.fd)
-		{
-			it->events = POLLHUP;
-			break;
-		}
-	}
 	client.leave_all_channels();
 	server.send_msg_to_all(CMD_CONFIRM( client.nickname, client.hostname, "QUIT", ":Quit: " + reason ));
 	server.send_message_to_client( client, "ERROR" );
+	server.fds_to_disconnect.push(client.fd);
 }
 
 void MessageParser::execJOIN( Client& client, string& line )
 {
 	vector<string> words = split_line(line);
-	if (words.size() < 2)
+	if (words.size() < 2 || !words[1].size())
 	{
 		server.send_message_to_client( client, ERR_NEEDMOREPARAMS( client.nickname, "JOIN" ) );
 	}
@@ -201,6 +197,16 @@ void MessageParser::execJOIN( Client& client, string& line )
 		if (!chan.try_password((words.size() > 2 ? words[2] : "")))
 		{
 			server.send_message_to_client( client, ERR_BADCHANNELKEY( client.nickname, words[1] ) );
+			return;
+		}
+		if (!chan.user_is_invited(client))
+		{
+			server.send_message_to_client( client, ERR_INVITEONLYCHAN( client.nickname, words[1]) );
+			return;
+		}
+		if (!chan.is_there_space_for_newuser())
+		{
+			server.send_message_to_client( client, ERR_CHANNELISFULL( client.nickname, words[1]) );
 			return;
 		}
 		if (!chan.join_client(client)) return;
@@ -249,7 +255,6 @@ void MessageParser::execPRIVMSG( Client& client, string& line )
 	else if (words.size() > 2)
 	{
 		server.send_message_to_client( client, ERR_TOOMANYTARGETS( client.nickname, "PRIVMSG" ) );
-		cout << words.size() << " args received\n";
 	}
 	else if (!msg.size())
 	{

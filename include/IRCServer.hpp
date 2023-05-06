@@ -18,7 +18,9 @@
 #include <cstdio>
 #include <cstring>
 #include <vector>
+#include <stack>
 #include <set>
+#include <map>
 #include <list>
 #include <algorithm>
 
@@ -35,6 +37,8 @@ using std::endl;
 using std::string;
 using std::vector;
 using std::set;
+using std::map;
+using std::stack;
 using std::list;
 
 class Client;
@@ -48,8 +52,6 @@ class IRCServer;
 
 #define BUFFER_SIZE 1024
 
-//TODO receive and send messages
-
 class IRCServer
 {
 	private:
@@ -61,6 +63,8 @@ class IRCServer
 		vector<pollfd> pfds;
 		set<Client> clients;
 		set<Channel> channels;
+		stack<int> fds_to_disconnect;
+		map<int,string> receive_buf;
 
 		friend class MessageParser;
 

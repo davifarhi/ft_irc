@@ -2,14 +2,11 @@
 
 Channel::Channel( const string& name ) : name(Channel::trim_channel_name(name))
 {
-	topic = this->name + " channel has no topic set";
+	topic = "";
 	password = "";
+	invite_only = false;
+	user_limit = default_user_limit();
 	has_password = false;
-}
-
-bool operator<( const Channel& lhs, const Channel& rhs )
-{
-	return (lhs.name < rhs.name);
 }
 
 bool Channel::client_is_in_channel( Client& client ) const
@@ -29,18 +26,20 @@ bool Channel::join_client( Client& client )
 
 void Channel::part_client( Client& client )
 {
-	//TODO remove from chan_ops
-	//if last chan_ops, first clients is chan_ops
+	chan_ops.erase(&client);
 	for (list<Client*>::iterator it = clients.begin(); it != clients.end(); it++)
 	{
 		if (*it == &client)
 			it = --clients.erase(it);
 	}
+	if (chan_ops.empty() && !clients.empty())
+		chan_ops.insert(clients.front());
 }
 
 void Channel::send_topic_to_client( Client& client, IRCServer& server ) const
 {
-	server.send_message_to_client( client, RPL_TOPIC( client.nickname, name, topic ) );
+	if (topic.size())
+		server.send_message_to_client( client, RPL_TOPIC( client.nickname, name, topic ) );
 }
 
 void Channel::send_names_to_client( Client& client, IRCServer& server) const
@@ -64,6 +63,30 @@ bool Channel::try_password( const string& pswd ) const
 	if (!has_password)
 		return true;
 	return pswd == password;
+}
+
+bool Channel::user_is_invited( Client & client ) const
+{
+	if (invite_only && invited.find(&client) == invited.end())
+		return false;
+	return true;
+}
+
+bool Channel::is_there_space_for_newuser( void ) const
+{
+	if (clients.size() < user_limit + 1)
+		return true;
+	return false;
+}
+
+size_t Channel::default_user_limit( void ) const
+{
+	return clients.max_size();
+}
+
+bool operator<( const Channel& lhs, const Channel& rhs )
+{
+	return (lhs.name < rhs.name);
 }
 
 string Channel::trim_channel_name( const string& str )
