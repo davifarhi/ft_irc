@@ -77,3 +77,12 @@ void Channel::change_topic_of_channel( const string str )
 {
 	topic = this->name + " " + str;
 }
+
+bool Channel::get_chan_ops( client& client)
+{
+	set<Client*>::iterator it = client.find(name);
+	if (it == client.end())
+		return false;
+	else
+		return true;
+}

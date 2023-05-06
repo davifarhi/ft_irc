@@ -20,7 +20,8 @@ void MessageParser::init( void )
 	cmd_list.push_back(client_cmd( string("JOIN"), &MessageParser::execJOIN ));
 	cmd_list.push_back(client_cmd( string("PART"), &MessageParser::execPART ));
 	cmd_list.push_back(client_cmd( string("PRIVMSG"), &MessageParser::execPRIVMSG ));
-	cmd_list.push_back(client_cmd( string("TOPIC"), &MessageParser::execTopic));
+	cmd_list.push_back(client_cmd( string("TOPIC"), &MessageParser::execTOPIC));
+	cmd_list.push_back(client_cmd( string("MODE"), &MessageParser::execMODE;
 }
 
 void MessageParser::parse( Client& client, string& line )
@@ -285,7 +286,7 @@ void MessageParser::exec( Client& client, string& line )
 	(void) line;
 }
 
-void MessageParser::execTopic( Client& client, string& line)
+void MessageParser::execTOPIC( Client& client, string& line )
 {
 	if (!line.find(":"))
 	{
@@ -323,5 +324,20 @@ void MessageParser::execTopic( Client& client, string& line)
 			chan.change_topic_of_channel(line.substr((line.find(':')) + 2));
 			chan.send_topic_to_client( client, server );//je comprend pas pourquoi ca marche pas sans ca 
 		}
+	}
+}
+
+void MessageParser::execMODE( Client& client, string& line )
+{
+	vector<string> words = split_line(line);
+	Channel* chan;
+	if (!server.get_channel( words[1], &chan ))
+	{
+		server.send_message_to_client( client, ERR_NOSUCHCHANNEL( client.nickname, words[1] ) );
+	}
+	Channel& chan = server.get_channel(words[1]);
+	if (!chan.get_chan_ops( client))
+	{
+		server.send_message_to_client( client, ERR_CHANOPRIVSNEEDED( client.nickname, words[1] ) );
 	}
 }

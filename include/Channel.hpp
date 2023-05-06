@@ -40,6 +40,7 @@ class Channel
 		static string trim_channel_name( const string& str );
 	
 		void change_topic_of_channel( const string str);
+		bool get_chan_ops( Client& client);
 };
 
 

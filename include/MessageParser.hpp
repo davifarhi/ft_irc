@@ -37,7 +37,8 @@ class MessageParser
 		void execJOIN( Client& client, string& line );
 		void execPART( Client& client, string& line );
 		void execPRIVMSG( Client& client, string& line );
-		void execTopic( Client& client, string& line );
+		void execTOPIC( Client& client, string& line );
+		void execMODE( Client& client, string& line );
 
 		//example for copy paste
 		void exec( Client& client, string& line );
