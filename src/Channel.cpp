@@ -152,3 +152,14 @@ void Channel::change_status_invit_channel( bool info )
 {
 	invite_only = info;
 }
+
+void Channel::change_limit_of_channel( string str, int rep )
+{
+	if (rep == 1)
+	{
+		int temp = atoi(str.c_str());
+		user_limit = temp;
+	}
+	else
+		user_limit = default_user_limit();
+}

@@ -418,4 +418,17 @@ void MessageParser::execMODE( Client& client, string& line )
 			return;
 		}
 	}
+	if (find_text(words[2], "+l") || find_text(words[2], "-l"))
+	{
+		if (!words[2].find("+l"))
+		{
+			chan.change_limit_of_channel(words[3], 1);//peut afficher la nouvelle limite de user
+			return;
+		}
+		else
+		{
+			chan.change_limit_of_channel("random", 0);
+			return;
+		}
+	}
 }
