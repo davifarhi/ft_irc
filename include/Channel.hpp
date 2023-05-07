@@ -15,6 +15,8 @@ class Channel
 
 		string name;
 		string topic;
+		
+		int status_topic;
 
 		bool invite_only;
 		size_t user_limit;
@@ -47,8 +49,11 @@ class Channel
 
 		static string trim_channel_name( const string& str );
 	
-		void change_topic_of_channel( const string str);
+		void change_topic_of_channel( const string str, Client& client);
 		bool get_chan_ops( Client& client);
+		void change_privilege_topic(int temp);
+		void add_new_chan_ops( Client& client );
+		void kick_user_of_chan_ops( Client& client );
 };
 
 

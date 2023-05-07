@@ -7,6 +7,7 @@ Channel::Channel( const string& name ) : name(Channel::trim_channel_name(name))
 	invite_only = false;
 	user_limit = default_user_limit();
 	has_password = false;
+	status_topic = 0;
 }
 
 bool Channel::client_is_in_channel( Client& client ) const
@@ -96,16 +97,38 @@ string Channel::trim_channel_name( const string& str )
 	return str;
 }
 
-void Channel::change_topic_of_channel( const string str )
+void Channel::change_topic_of_channel( const string str, Client& client )
 {
-	topic = this->name + " " + str;
+	if (status_topic == 0)
+		topic = this->name + " " + str;
+	else
+	{
+		if (get_chan_ops( client ))
+			topic = this->name + " " + str;
+	}
 }
 
-bool Channel::get_chan_ops( client& client)
+bool Channel::get_chan_ops( Client& client )
 {
-	set<Client*>::iterator it = client.find(name);
-	if (it == client.end())
+	set<Client*>::iterator it = chan_ops.find(&client);
+	if (it == chan_ops.end())
 		return false;
 	else
 		return true;
+}
+
+void Channel::change_privilege_topic( int temp )
+{
+	status_topic = temp;
+}
+
+void Channel::add_new_chan_ops( Client& client )
+{
+	chan_ops.insert(&client);
+}
+
+void Channel::kick_user_of_chan_ops( Client& client )
+{
+	if (chan_ops.size() > 1)
+		chan_ops.erase(&client);
 }
