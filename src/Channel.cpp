@@ -139,7 +139,6 @@ void Channel::change_channel_keys( string str, int rep )
 	{
 		password = str;
 		has_password = true;
-		cout << password << " " << has_password << "\n";
 	}
 	else
 	{
