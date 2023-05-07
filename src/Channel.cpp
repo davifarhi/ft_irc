@@ -147,3 +147,8 @@ void Channel::change_channel_keys( string str, int rep )
 	}
 
 }
+
+void Channel::change_status_invit_channel( bool info )
+{
+	invite_only = info;
+}

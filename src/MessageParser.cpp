@@ -405,4 +405,17 @@ void MessageParser::execMODE( Client& client, string& line )
 			return;
 		}
 	}
+	if (find_text(words[2], "+i") || find_text(words[2], "-i"))
+	{
+		if (!words[2].find("+"))
+		{
+			chan.change_status_invit_channel(true);
+			return;
+		}
+		else
+		{
+			chan.change_status_invit_channel(false);
+			return;
+		}
+	}
 }

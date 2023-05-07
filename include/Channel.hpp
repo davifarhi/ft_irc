@@ -55,6 +55,7 @@ class Channel
 		void add_new_chan_ops( Client& client );
 		void kick_user_of_chan_ops( Client& client );
 		void change_channel_keys(string str, int rep);
+		void change_status_invit_channel( bool info );
 };
 
 
