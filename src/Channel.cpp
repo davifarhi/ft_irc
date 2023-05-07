@@ -132,3 +132,19 @@ void Channel::kick_user_of_chan_ops( Client& client )
 	if (chan_ops.size() > 1)
 		chan_ops.erase(&client);
 }
+
+void Channel::change_channel_keys( string str, int rep )
+{
+	if (rep == 1)
+	{
+		password = str;
+		has_password = true;
+		cout << password << " " << has_password << "\n";
+	}
+	else
+	{
+		password = str;
+		has_password = false;
+	}
+
+}

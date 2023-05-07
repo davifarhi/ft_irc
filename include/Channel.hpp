@@ -54,6 +54,7 @@ class Channel
 		void change_privilege_topic(int temp);
 		void add_new_chan_ops( Client& client );
 		void kick_user_of_chan_ops( Client& client );
+		void change_channel_keys(string str, int rep);
 };
 
 

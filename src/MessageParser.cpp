@@ -381,7 +381,7 @@ void MessageParser::execMODE( Client& client, string& line )
 			if (!words[2].find("+"))
 			{
 				chan.add_new_chan_ops( *user );
-//				"t'es chan_ops"
+//				"t'es chan_ops" peut etre ajouter message de confirmation
 				return;
 			}
 			else
@@ -390,6 +390,19 @@ void MessageParser::execMODE( Client& client, string& line )
 //				"t'es plus chan_ops"
 				return;
 			}
+		}
+	}
+	if (find_text(words[2], "+k") || find_text(words[2], "-k"))
+	{
+		if (!words[2].find("+"))
+		{
+			chan.change_channel_keys(words[3], 1);//peut etre juste ajouter des message de confirmation
+			return;
+		}
+		else
+		{
+			chan.change_channel_keys("", 0);
+			return;
 		}
 	}
 }
