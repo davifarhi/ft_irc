@@ -25,6 +25,7 @@
 #define ERR_CHANOPRIVSNEEDED(client, channel)	"482 " + client + " " + channel + " :You're not channel operator"
 
 #define ERR_NOTREGISTERED(client)			"451 " + client + " :You have not registered"
+#define ERR_USERONCHANNEL(client, nick, channel)	"443 " + client + " " + nick + " #" + channel + " :is already on channel"
 
 //log reponse
 
@@ -33,6 +34,7 @@
 #define RPL_NOTOPIC(client, channel)		"331 " + client + " #" + channel + " :No topic is set"
 #define RPL_NAMREPLY(client, channel, nick)	"353 " + client + " = " + channel + " :" + nick
 #define RPL_ENDOFNAMES(client, channel)		"366 " + client + " " + channel + " :End of /NAMES list"
+#define RPL_INVITING(client, nick, channel)	"341 " + client + " " + nick + " #" + channel
 
 //server command answer
 

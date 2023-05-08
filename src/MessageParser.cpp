@@ -23,6 +23,7 @@ void MessageParser::init( void )
 	cmd_list.push_back(client_cmd( string("TOPIC"), &MessageParser::execTOPIC));
 	cmd_list.push_back(client_cmd( string("MODE"), &MessageParser::execMODE ));
 //	cmd_list.push_back(client_cmd( string("KICK"), &MessageParser::execKICK ));
+	cmd_list.push_back(client_cmd( string("INVITE"), &MessageParser::execINVITE ));
 }
 
 void MessageParser::parse( Client& client, string& line )
@@ -256,6 +257,7 @@ void MessageParser::execPART( Client& client, string& line )
 
 void MessageParser::execPRIVMSG( Client& client, string& line )
 {
+	//TODO ERR_NOTONCHANNEL
 	if (!check_registration(client)) return;
 	vector<string> words = split_line(line.substr( 0, line.find(':') ));
 	string msg = get_argument(line);
@@ -302,6 +304,44 @@ void MessageParser::exec( Client& client, string& line )
 	(void) line;
 }
 
+void MessageParser::execINVITE( Client& client, string& line )
+{
+	if (!check_registration(client)) return;
+	vector<string> words = split_line(line);
+	Client *target;
+	Channel *chan;
+	if (words.size() < 3)
+	{
+		server.send_message_to_client( client, ERR_NEEDMOREPARAMS( client.nickname, "INVITE" ) );
+	}
+	else if (!server.get_user( words[1], &target ))
+	{
+		server.send_message_to_client( client, ERR_NOSUCHNICK( client.nickname, words[1] ) );
+	}
+	else if (!server.get_channel( words[2], &chan ))
+	{
+		server.send_message_to_client( client, ERR_NOSUCHCHANNEL( client.nickname, words[2] ) );
+	}
+	else if (!chan->client_is_in_channel(client))
+	{
+		server.send_message_to_client( client, ERR_NOTONCHANNEL( client.nickname, words[2] ) );
+	}
+	else if (chan->client_is_in_channel(*target))
+	{
+		server.send_message_to_client( client, ERR_USERONCHANNEL( client.nickname, target->nickname, words[2] ) );
+	}
+	else if (chan->invite_only && !chan->get_chan_ops(client))
+	{
+		server.send_message_to_client( client, ERR_CHANOPRIVSNEEDED( client.nickname, words[2] ) );
+	}
+	else
+	{
+		chan->invited.insert(target);
+		server.send_message_to_client( client, RPL_INVITING( client.nickname, target->nickname, chan->name ) );
+		server.send_message_to_client( *target, CMD_CONFIRM( client.nickname, target->hostname, "INVITE", target->nickname + " #" + chan->name ) );
+	}
+}
+
 void MessageParser::execTOPIC( Client& client, string& line )
 {
 	if (!check_registration(client)) return;
@@ -327,6 +367,7 @@ void MessageParser::execTOPIC( Client& client, string& line )
 		{
 			//TODO trouver le channel juste avec le client, trouver dans quel channel la commande a ete lancer
 			Channel& chan = server.get_channel(words[1]);//changer trouver le channel juste avec le client
+			//TODO correct message with CMD_CONFIRM
 			chan.send_topic_to_client( client, server );
 			return; 
 		}
