@@ -7,7 +7,7 @@ Channel::Channel( const string& name ) : name(Channel::trim_channel_name(name))
 	invite_only = false;
 	user_limit = default_user_limit();
 	has_password = false;
-	status_topic = 0;
+	protected_topic = 0;
 }
 
 bool Channel::client_is_in_channel( Client& client ) const
@@ -101,7 +101,7 @@ string Channel::trim_channel_name( const string& str )
 
 void Channel::change_topic_of_channel( const string str, Client& client )
 {
-	if (status_topic == 0)
+	if (protected_topic == 0)
 		topic = str;
 	else
 	{
@@ -119,9 +119,9 @@ bool Channel::get_chan_ops( Client& client )
 		return true;
 }
 
-void Channel::change_privilege_topic( int temp )
+void Channel::change_privilege_topic( bool temp )
 {
-	status_topic = temp;
+	protected_topic = temp;
 }
 
 void Channel::add_new_chan_ops( Client& client )

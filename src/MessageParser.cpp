@@ -330,12 +330,12 @@ void MessageParser::execTOPIC( Client& client, string& line )
 		{
 			server.send_message_to_client( client, ERR_NOTONCHANNEL( client.nickname, words[1] ) );
 		}
-		if (words.size() > 2)
+		else if (words.size() > 2)
 		{
 			Channel& chan = server.get_channel(words[1]);
-			if (!chan.get_chan_ops( client ))
+			if (chan.protected_topic && !chan.get_chan_ops( client ))
 			{
-				server.send_message_to_client( client, ERR_NOSUCHCHANNEL( client.nickname, words[1] ) );
+				server.send_message_to_client( client, ERR_CHANOPRIVSNEEDED( client.nickname, words[1] ) );
 				return;
 			}
 			chan.change_topic_of_channel(line.substr((line.find(':')) + 2), client );
@@ -354,6 +354,11 @@ void MessageParser::execMODE( Client& client, string& line )
 		server.send_message_to_client( client, ERR_NEEDMOREPARAMS( client.nickname, "MODE" ) );
 		return;
 	}
+	if (words.size() < 3 || !find_text(line, "#") || (!find_text(line, "-") && !find_text(line, "+")))
+	{
+		//mode request
+		return;
+	}
 	if (!server.get_channel( words[1], &chann ))
 	{
 		server.send_message_to_client( client, ERR_NOSUCHCHANNEL( client.nickname, words[1] ) );
@@ -365,22 +370,17 @@ void MessageParser::execMODE( Client& client, string& line )
 		server.send_message_to_client( client, ERR_CHANOPRIVSNEEDED( client.nickname, words[1] ) );
 		return;
 	}
-	if (words.size() < 3)
-	{
-		//mode request
-		return;
-	}
 	if (find_text(words[2], "+t") || find_text(words[2], "-t"))
 	{
-		if (words[2].find("+"))
+		if (words[2].find("+") != words[2].npos)
 		{
-			chan.change_privilege_topic(0);
+			chan.change_privilege_topic(1);
 			//afficher un message 
 			return;
 		}
 		else
 		{
-			chan.change_privilege_topic(1);
+			chan.change_privilege_topic(0);
 			return;
 		}
 	}

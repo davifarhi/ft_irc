@@ -22,7 +22,7 @@
 #define ERR_NORECIPIENT(client, command)	"411 " + client + " :No recipient given " + command
 #define ERR_TOOMANYTARGETS(client, command)	"407 " + client + " :Too many targets " + command
 #define ERR_NOTEXTTOSEND(client)			"412 " + client + " :No text to send"
-#define ERR_CHANOPRIVSNEEDED(client, channel)	"482" + client + " " + channel + " :You're not channel operator"
+#define ERR_CHANOPRIVSNEEDED(client, channel)	"482 " + client + " " + channel + " :You're not channel operator"
 
 //log reponse
 
