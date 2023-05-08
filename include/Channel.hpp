@@ -34,7 +34,7 @@ class Channel
 		bool join_client( Client& client );
 		void part_client( Client& client );
 
-		void send_topic_to_client( Client& client, IRCServer& server ) const;
+		void send_topic_to_client( const Client& client, IRCServer& server ) const;
 		void send_names_to_client( Client& client, IRCServer& server) const;
 
 		void send_msg_to_all( string msg, IRCServer& server, Client* exception = 0 );

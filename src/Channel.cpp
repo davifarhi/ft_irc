@@ -37,9 +37,12 @@ void Channel::part_client( Client& client )
 		chan_ops.insert(clients.front());
 }
 
-void Channel::send_topic_to_client( Client& client, IRCServer& server ) const
+void Channel::send_topic_to_client( const Client& client, IRCServer& server ) const
 {
-	server.send_message_to_client( client, RPL_TOPIC( client.nickname, name, topic ) );
+	if (topic.size())
+		server.send_message_to_client( client, RPL_TOPIC( client.nickname, name, topic ) );
+	else
+		server.send_message_to_client( client, RPL_NOTOPIC( client.nickname, name ) );
 }
 
 void Channel::send_names_to_client( Client& client, IRCServer& server) const
@@ -99,11 +102,11 @@ string Channel::trim_channel_name( const string& str )
 void Channel::change_topic_of_channel( const string str, Client& client )
 {
 	if (status_topic == 0)
-		topic = this->name + " " + str;
+		topic = str;
 	else
 	{
 		if (get_chan_ops( client ))
-			topic = this->name + " " + str;
+			topic = str;
 	}
 }
 

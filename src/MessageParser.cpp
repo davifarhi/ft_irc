@@ -339,7 +339,8 @@ void MessageParser::execTOPIC( Client& client, string& line )
 				return;
 			}
 			chan.change_topic_of_channel(line.substr((line.find(':')) + 2), client );
-			chan.send_msg_to_all( RPL_TOPIC( client.nickname, chan.name, chan.topic ), server );
+			for (list<Client*>::iterator it = chan.clients.begin(); it != chan.clients.end(); it++)
+				chan.send_topic_to_client( **it, server );
 		}
 	}
 }

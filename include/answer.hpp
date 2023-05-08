@@ -28,6 +28,7 @@
 
 #define RPL_WELCOME(source)			"001 " + source + " :Welcome " + source + " to the ft_irc network"
 #define RPL_TOPIC(client, channel, topic)	"332 " + client + " #" + channel + " :" + topic
+#define RPL_NOTOPIC(client, channel)		"331 " + client + " #" + channel + " :No topic is set"
 #define RPL_NAMREPLY(client, channel, nick)	"353 " + client + " = " + channel + " :" + nick
 #define RPL_ENDOFNAMES(client, channel)		"366 " + client + " " + channel + " :End of /NAMES list"
 
