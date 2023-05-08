@@ -22,7 +22,7 @@ void MessageParser::init( void )
 	cmd_list.push_back(client_cmd( string("PRIVMSG"), &MessageParser::execPRIVMSG ));
 	cmd_list.push_back(client_cmd( string("TOPIC"), &MessageParser::execTOPIC));
 	cmd_list.push_back(client_cmd( string("MODE"), &MessageParser::execMODE ));
-//	cmd_list.push_back(client_cmd( string("KICK"), &MessageParser::execKICK ));
+	cmd_list.push_back(client_cmd( string("KICK"), &MessageParser::execKICK ));
 }
 
 void MessageParser::parse( Client& client, string& line )
@@ -445,7 +445,7 @@ void MessageParser::execMODE( Client& client, string& line )
 	}
 }
 
-/*void MessageParser::execKICK( Client& client, string& line )
+void MessageParser::execKICK( Client& client, string& line )
 {
 	vector<string> words = split_line(line);
 	Channel* chann;
@@ -465,14 +465,14 @@ void MessageParser::execMODE( Client& client, string& line )
 	{
 		if (user->is_in_channel(chan))
 		{
-			 TODO j'ai besoin d'avoir un client& obtenu avec le user
-			chan.send_msg_to_all( CMD_CONFIRM( use.nickname, use.hostname, "KICK", "#" + chan.name ), server );
-			chan.part_client(use);
-			use.part_channel(*chan);
+//			TODO faire attention au message envoyer 
+			chan.send_msg_to_all( CMD_CONFIRM( user->nickname, user->hostname, "KICK", "#" + chan.name ), server );
+			chan.part_client(*user);
+			user->part_channel(chan);
 		}
 		else
 			cout << "pas dans le channel\n";
 	}
 	else
 		cout << "user inconnue\n";
-}*/
+}
