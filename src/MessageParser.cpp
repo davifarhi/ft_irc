@@ -369,9 +369,8 @@ void MessageParser::execTOPIC( Client& client, string& line )
 		{
 			//TODO trouver le channel juste avec le client, trouver dans quel channel la commande a ete lancer
 			Channel& chan = server.get_channel(words[1]);//changer trouver le channel juste avec le client
-			//TODO correct message with CMD_CONFIRM
 			chan.send_topic_to_client( client, server );
-			return; 
+			return;
 		}
 	}
 	else
@@ -394,8 +393,7 @@ void MessageParser::execTOPIC( Client& client, string& line )
 				return;
 			}
 			chan.change_topic_of_channel( get_argument(line), client );
-			for (list<Client*>::iterator it = chan.clients.begin(); it != chan.clients.end(); it++)
-				chan.send_topic_to_client( **it, server );
+			chan.send_msg_to_all( CMD_CONFIRM( client.nickname, client.hostname, "TOPIC", "#" + chan.name + " :" + chan.topic ), server );
 		}
 	}
 }
