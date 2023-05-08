@@ -338,7 +338,7 @@ void MessageParser::execTOPIC( Client& client, string& line )
 				server.send_message_to_client( client, ERR_CHANOPRIVSNEEDED( client.nickname, words[1] ) );
 				return;
 			}
-			chan.change_topic_of_channel(line.substr((line.find(':')) + 2), client );
+			chan.change_topic_of_channel( get_argument(line), client );
 			for (list<Client*>::iterator it = chan.clients.begin(); it != chan.clients.end(); it++)
 				chan.send_topic_to_client( **it, server );
 		}
