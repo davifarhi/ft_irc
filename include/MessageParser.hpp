@@ -42,7 +42,7 @@ class MessageParser
 		void execTOPIC( Client& client, string& line );
 		void execMODE( Client& client, string& line );
 		void execINVITE( Client& client, string& line );
-//		void execKICK( Client& client, string& line );
+		void execKICK( Client& client, string& line );
 
 		//example for copy paste
 		void exec( Client& client, string& line );
