@@ -34,6 +34,11 @@ void Client::leave_all_channels( void )
 	channels.clear();
 }
 
+bool Client::is_registration_done( void )
+{
+	return authenticated && registered;
+}
+
 bool operator<( const Client& lhs, const Client& rhs ) { return (lhs.fd < rhs.fd); }
 
 std::ostream& operator<<( std::ostream& os, const Client& c )

@@ -22,6 +22,7 @@ void MessageParser::init( void )
 	cmd_list.push_back(client_cmd( string("PRIVMSG"), &MessageParser::execPRIVMSG ));
 	cmd_list.push_back(client_cmd( string("TOPIC"), &MessageParser::execTOPIC));
 	cmd_list.push_back(client_cmd( string("MODE"), &MessageParser::execMODE ));
+	cmd_list.push_back(client_cmd( string("INVITE"), &MessageParser::execINVITE ));
 	cmd_list.push_back(client_cmd( string("KICK"), &MessageParser::execKICK ));
 }
 
@@ -48,6 +49,13 @@ string MessageParser::get_argument( string& line ) const
 	if (pos == line.npos)
 		return "";
 	return line.substr(pos).erase(0, 1);
+}
+
+bool MessageParser::check_registration( Client& client )
+{
+	if (client.is_registration_done()) return true;
+	server.send_message_to_client( client, ERR_NOTREGISTERED(client.nickname) );
+	return false;
 }
 
 vector<string> MessageParser::split_line( const string& line ) const
@@ -187,6 +195,7 @@ void MessageParser::execQUIT( Client& client, string& line )
 
 void MessageParser::execJOIN( Client& client, string& line )
 {
+	if (!check_registration(client)) return;
 	vector<string> words = split_line(line);
 	if (words.size() < 2 || !words[1].size())
 	{
@@ -220,6 +229,7 @@ void MessageParser::execJOIN( Client& client, string& line )
 
 void MessageParser::execPART( Client& client, string& line )
 {
+	if (!check_registration(client)) return;
 	vector<string> words = split_line(line);
 	if (words.size() < 2)
 	{
@@ -247,6 +257,7 @@ void MessageParser::execPART( Client& client, string& line )
 
 void MessageParser::execPRIVMSG( Client& client, string& line )
 {
+	if (!check_registration(client)) return;
 	vector<string> words = split_line(line.substr( 0, line.find(':') ));
 	string msg = get_argument(line);
 	if (words.size() < 2)
@@ -268,7 +279,10 @@ void MessageParser::execPRIVMSG( Client& client, string& line )
 			Channel* chan;
 			if (server.get_channel( words[1], &chan ))
 			{
-				chan->send_msg_to_all( PRIVMSG_CHAN( client.nickname, client.hostname, chan->name, msg ), server, &client );
+				if (chan->client_is_in_channel(client))
+					chan->send_msg_to_all( PRIVMSG_CHAN( client.nickname, client.hostname, chan->name, msg ), server, &client );
+				else
+					server.send_message_to_client( client, ERR_NOTONCHANNEL( client.nickname, chan->name ) );
 				return;
 			}
 		}
@@ -288,12 +302,51 @@ void MessageParser::execPRIVMSG( Client& client, string& line )
 // example for copy paste
 void MessageParser::exec( Client& client, string& line )
 {
-	(void) client;
+	if (!check_registration(client)) return;
 	(void) line;
+}
+
+void MessageParser::execINVITE( Client& client, string& line )
+{
+	if (!check_registration(client)) return;
+	vector<string> words = split_line(line);
+	Client *target;
+	Channel *chan;
+	if (words.size() < 3)
+	{
+		server.send_message_to_client( client, ERR_NEEDMOREPARAMS( client.nickname, "INVITE" ) );
+	}
+	else if (!server.get_user( words[1], &target ))
+	{
+		server.send_message_to_client( client, ERR_NOSUCHNICK( client.nickname, words[1] ) );
+	}
+	else if (!server.get_channel( words[2], &chan ))
+	{
+		server.send_message_to_client( client, ERR_NOSUCHCHANNEL( client.nickname, words[2] ) );
+	}
+	else if (!chan->client_is_in_channel(client))
+	{
+		server.send_message_to_client( client, ERR_NOTONCHANNEL( client.nickname, words[2] ) );
+	}
+	else if (chan->client_is_in_channel(*target))
+	{
+		server.send_message_to_client( client, ERR_USERONCHANNEL( client.nickname, target->nickname, words[2] ) );
+	}
+	else if (chan->invite_only && !chan->get_chan_ops(client))
+	{
+		server.send_message_to_client( client, ERR_CHANOPRIVSNEEDED( client.nickname, words[2] ) );
+	}
+	else
+	{
+		chan->invited.insert(target);
+		server.send_message_to_client( client, RPL_INVITING( client.nickname, target->nickname, chan->name ) );
+		server.send_message_to_client( *target, CMD_CONFIRM( client.nickname, target->hostname, "INVITE", target->nickname + " #" + chan->name ) );
+	}
 }
 
 void MessageParser::execTOPIC( Client& client, string& line )
 {
+	if (!check_registration(client)) return;
 	vector<string> words = split_line(line);
 	if (words.size() == 1)
 	{
@@ -317,7 +370,7 @@ void MessageParser::execTOPIC( Client& client, string& line )
 			//TODO trouver le channel juste avec le client, trouver dans quel channel la commande a ete lancer
 			Channel& chan = server.get_channel(words[1]);//changer trouver le channel juste avec le client
 			chan.send_topic_to_client( client, server );
-			return; 
+			return;
 		}
 	}
 	else
@@ -340,14 +393,14 @@ void MessageParser::execTOPIC( Client& client, string& line )
 				return;
 			}
 			chan.change_topic_of_channel( get_argument(line), client );
-			for (list<Client*>::iterator it = chan.clients.begin(); it != chan.clients.end(); it++)
-				chan.send_topic_to_client( **it, server );
+			chan.send_msg_to_all( CMD_CONFIRM( client.nickname, client.hostname, "TOPIC", "#" + chan.name + " :" + chan.topic ), server );
 		}
 	}
 }
 
 void MessageParser::execMODE( Client& client, string& line )
 {
+	if (!check_registration(client)) return;
 	vector<string> words = split_line(line);
 	Channel* chann;
 	if (words.size() == 1)
