@@ -293,9 +293,14 @@ void MessageParser::exec( Client& client, string& line )
 
 void MessageParser::execTOPIC( Client& client, string& line )
 {
+	vector<string> words = split_line(line);
+	if (words.size() == 1)
+	{
+		server.send_message_to_client( client, ERR_NEEDMOREPARAMS( client.nickname, "TOPIC" ) );
+		return;
+	}
 	if (!line.find(":"))
 	{
-		vector<string> words = split_line(line);
 		Channel* chan;
 		if (!server.get_channel( words[1], &chan ))
 		{
@@ -311,6 +316,7 @@ void MessageParser::execTOPIC( Client& client, string& line )
 		else
 		{
 			//TODO trouver le channel juste avec le client, trouver dans quel channel la commande a ete lancer
+			//WARN with get_channel(string) the channel is created if it doesn't exist
 			Channel& chan = server.get_channel(words[1]);//changer trouver le channel juste avec le client
 			chan.send_topic_to_client( client, server );
 			return; 
@@ -318,7 +324,6 @@ void MessageParser::execTOPIC( Client& client, string& line )
 	}
 	else
 	{
-		vector<string> words = split_line(line);
 		Channel* chan;
 		if (!server.get_channel( words[1], &chan ))
 		{
