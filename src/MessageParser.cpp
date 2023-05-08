@@ -257,7 +257,6 @@ void MessageParser::execPART( Client& client, string& line )
 
 void MessageParser::execPRIVMSG( Client& client, string& line )
 {
-	//TODO ERR_NOTONCHANNEL
 	if (!check_registration(client)) return;
 	vector<string> words = split_line(line.substr( 0, line.find(':') ));
 	string msg = get_argument(line);
@@ -280,7 +279,10 @@ void MessageParser::execPRIVMSG( Client& client, string& line )
 			Channel* chan;
 			if (server.get_channel( words[1], &chan ))
 			{
-				chan->send_msg_to_all( PRIVMSG_CHAN( client.nickname, client.hostname, chan->name, msg ), server, &client );
+				if (chan->client_is_in_channel(client))
+					chan->send_msg_to_all( PRIVMSG_CHAN( client.nickname, client.hostname, chan->name, msg ), server, &client );
+				else
+					server.send_message_to_client( client, ERR_NOTONCHANNEL( client.nickname, chan->name ) );
 				return;
 			}
 		}
