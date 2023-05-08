@@ -36,6 +36,7 @@ class Client
 		void part_channel( Channel& channel );
 
 		void leave_all_channels( void );
+		bool is_registration_done( void );
 
 		friend bool operator<( const Client& lhs, const Client& rhs );
 		friend std::ostream& operator<<( std::ostream& os, const Client& c );

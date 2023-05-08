@@ -28,6 +28,8 @@ class MessageParser
 		string get_argument( string& line ) const;
 		vector<string> split_line( const string& line ) const;
 
+		bool check_registration( Client& client );
+
 		void execCAP( Client& client, string& line );
 		void execPASS( Client& client, string& line );
 		void execNICK( Client& client, string& line );

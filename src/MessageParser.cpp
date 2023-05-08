@@ -50,6 +50,13 @@ string MessageParser::get_argument( string& line ) const
 	return line.substr(pos).erase(0, 1);
 }
 
+bool MessageParser::check_registration( Client& client )
+{
+	if (client.is_registration_done()) return true;
+	server.send_message_to_client( client, ERR_NOTREGISTERED(client.nickname) );
+	return false;
+}
+
 vector<string> MessageParser::split_line( const string& line ) const
 {
 	vector<string> words;
@@ -187,6 +194,7 @@ void MessageParser::execQUIT( Client& client, string& line )
 
 void MessageParser::execJOIN( Client& client, string& line )
 {
+	if (!check_registration(client)) return;
 	vector<string> words = split_line(line);
 	if (words.size() < 2 || !words[1].size())
 	{
@@ -220,6 +228,7 @@ void MessageParser::execJOIN( Client& client, string& line )
 
 void MessageParser::execPART( Client& client, string& line )
 {
+	if (!check_registration(client)) return;
 	vector<string> words = split_line(line);
 	if (words.size() < 2)
 	{
@@ -247,6 +256,7 @@ void MessageParser::execPART( Client& client, string& line )
 
 void MessageParser::execPRIVMSG( Client& client, string& line )
 {
+	if (!check_registration(client)) return;
 	vector<string> words = split_line(line.substr( 0, line.find(':') ));
 	string msg = get_argument(line);
 	if (words.size() < 2)
@@ -288,12 +298,13 @@ void MessageParser::execPRIVMSG( Client& client, string& line )
 // example for copy paste
 void MessageParser::exec( Client& client, string& line )
 {
-	(void) client;
+	if (!check_registration(client)) return;
 	(void) line;
 }
 
 void MessageParser::execTOPIC( Client& client, string& line )
 {
+	if (!check_registration(client)) return;
 	vector<string> words = split_line(line);
 	if (words.size() == 1)
 	{
@@ -348,6 +359,7 @@ void MessageParser::execTOPIC( Client& client, string& line )
 
 void MessageParser::execMODE( Client& client, string& line )
 {
+	if (!check_registration(client)) return;
 	vector<string> words = split_line(line);
 	Channel* chann;
 	if (words.size() == 1)
