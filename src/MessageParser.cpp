@@ -299,24 +299,21 @@ void MessageParser::execTOPIC( Client& client, string& line )
 		server.send_message_to_client( client, ERR_NEEDMOREPARAMS( client.nickname, "TOPIC" ) );
 		return;
 	}
-	if (!line.find(":"))
+	if (line.find(":") == line.npos)
 	{
 		Channel* chan;
 		if (!server.get_channel( words[1], &chan ))
 		{
 			//TODO il n'arriver pas a trouver le channel vue qu'il est pas dans la commande (words[1])
 			server.send_message_to_client( client, ERR_NOSUCHCHANNEL( client.nickname, words[1] ) );
-			return; 
 		}
 		else if (!client.is_in_channel(*chan))
 		{
 			server.send_message_to_client( client, ERR_NOTONCHANNEL( client.nickname, words[1] ) );
-			return; 
 		}
 		else
 		{
 			//TODO trouver le channel juste avec le client, trouver dans quel channel la commande a ete lancer
-			//WARN with get_channel(string) the channel is created if it doesn't exist
 			Channel& chan = server.get_channel(words[1]);//changer trouver le channel juste avec le client
 			chan.send_topic_to_client( client, server );
 			return; 
@@ -328,12 +325,10 @@ void MessageParser::execTOPIC( Client& client, string& line )
 		if (!server.get_channel( words[1], &chan ))
 		{
 			server.send_message_to_client( client, ERR_NOSUCHCHANNEL( client.nickname, words[1] ) );
-			return;
 		}
 		else if (!client.is_in_channel(*chan))
 		{
 			server.send_message_to_client( client, ERR_NOTONCHANNEL( client.nickname, words[1] ) );
-			return; 
 		}
 		if (words.size() > 2)
 		{
@@ -344,7 +339,7 @@ void MessageParser::execTOPIC( Client& client, string& line )
 				return;
 			}
 			chan.change_topic_of_channel(line.substr((line.find(':')) + 2), client );
-			chan.send_topic_to_client( client, server );//je comprend pas pourquoi ca marche pas sans ca 
+			chan.send_msg_to_all( RPL_TOPIC( client.nickname, chan.name, chan.topic ), server );
 		}
 	}
 }
