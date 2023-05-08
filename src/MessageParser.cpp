@@ -348,6 +348,11 @@ void MessageParser::execMODE( Client& client, string& line )
 {
 	vector<string> words = split_line(line);
 	Channel* chann;
+	if (words.size() == 1)
+	{
+		server.send_message_to_client( client, ERR_NEEDMOREPARAMS( client.nickname, "MODE" ) );
+		return;
+	}
 	if (!server.get_channel( words[1], &chann ))
 	{
 		server.send_message_to_client( client, ERR_NOSUCHCHANNEL( client.nickname, words[1] ) );
@@ -357,6 +362,11 @@ void MessageParser::execMODE( Client& client, string& line )
 	if (!chan.get_chan_ops( client ))
 	{
 		server.send_message_to_client( client, ERR_CHANOPRIVSNEEDED( client.nickname, words[1] ) );
+		return;
+	}
+	if (words.size() < 3)
+	{
+		//mode request
 		return;
 	}
 	if (find_text(words[2], "+t") || find_text(words[2], "-t"))
