@@ -213,7 +213,7 @@ void MessageParser::execJOIN( Client& client, string& line )
 		if (!chan.join_client(client)) return;
 		client.join_channel(chan);
 		chan.send_msg_to_all( CMD_CONFIRM( client.nickname, client.hostname, "JOIN", "#" + chan.name ), server );
-		chan.send_topic_to_client( client, server );
+		if (chan.topic.size()) chan.send_topic_to_client( client, server );
 		chan.send_names_to_client( client, server );
 	}
 }
@@ -294,20 +294,23 @@ void MessageParser::exec( Client& client, string& line )
 
 void MessageParser::execTOPIC( Client& client, string& line )
 {
-	if (!line.find(":"))
+	vector<string> words = split_line(line);
+	if (words.size() == 1)
 	{
-		vector<string> words = split_line(line);
+		server.send_message_to_client( client, ERR_NEEDMOREPARAMS( client.nickname, "TOPIC" ) );
+		return;
+	}
+	if (line.find(":") == line.npos)
+	{
 		Channel* chan;
 		if (!server.get_channel( words[1], &chan ))
 		{
 			//TODO il n'arriver pas a trouver le channel vue qu'il est pas dans la commande (words[1])
 			server.send_message_to_client( client, ERR_NOSUCHCHANNEL( client.nickname, words[1] ) );
-			return; 
 		}
 		else if (!client.is_in_channel(*chan))
 		{
 			server.send_message_to_client( client, ERR_NOTONCHANNEL( client.nickname, words[1] ) );
-			return; 
 		}
 		else
 		{
@@ -319,28 +322,26 @@ void MessageParser::execTOPIC( Client& client, string& line )
 	}
 	else
 	{
-		vector<string> words = split_line(line);
 		Channel* chan;
 		if (!server.get_channel( words[1], &chan ))
 		{
 			server.send_message_to_client( client, ERR_NOSUCHCHANNEL( client.nickname, words[1] ) );
-			return;
 		}
 		else if (!client.is_in_channel(*chan))
 		{
 			server.send_message_to_client( client, ERR_NOTONCHANNEL( client.nickname, words[1] ) );
-			return; 
 		}
-		if (words.size() > 2)
+		else if (words.size() > 2)
 		{
 			Channel& chan = server.get_channel(words[1]);
-			if (!chan.get_chan_ops( client ))
+			if (chan.protected_topic && !chan.get_chan_ops( client ))
 			{
-				server.send_message_to_client( client, ERR_NOSUCHCHANNEL( client.nickname, words[1] ) );
+				server.send_message_to_client( client, ERR_CHANOPRIVSNEEDED( client.nickname, words[1] ) );
 				return;
 			}
 			chan.change_topic_of_channel(line.substr((line.find(':')) + 2), client );
-			chan.send_topic_to_client( client, server );//je comprend pas pourquoi ca marche pas sans ca 
+			for (list<Client*>::iterator it = chan.clients.begin(); it != chan.clients.end(); it++)
+				chan.send_topic_to_client( **it, server );
 		}
 	}
 }
@@ -349,6 +350,16 @@ void MessageParser::execMODE( Client& client, string& line )
 {
 	vector<string> words = split_line(line);
 	Channel* chann;
+	if (words.size() == 1)
+	{
+		server.send_message_to_client( client, ERR_NEEDMOREPARAMS( client.nickname, "MODE" ) );
+		return;
+	}
+	if (words.size() < 3 || !find_text(line, "#") || (!find_text(line, "-") && !find_text(line, "+")))
+	{
+		//mode request
+		return;
+	}
 	if (!server.get_channel( words[1], &chann ))
 	{
 		server.send_message_to_client( client, ERR_NOSUCHCHANNEL( client.nickname, words[1] ) );
@@ -362,15 +373,15 @@ void MessageParser::execMODE( Client& client, string& line )
 	}
 	if (find_text(words[2], "+t") || find_text(words[2], "-t"))
 	{
-		if (words[2].find("+"))
+		if (words[2].find("+") != words[2].npos)
 		{
-			chan.change_privilege_topic(0);
+			chan.change_privilege_topic(1);
 			//afficher un message 
 			return;
 		}
 		else
 		{
-			chan.change_privilege_topic(1);
+			chan.change_privilege_topic(0);
 			return;
 		}
 	}
