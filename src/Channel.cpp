@@ -39,8 +39,7 @@ void Channel::part_client( Client& client )
 
 void Channel::send_topic_to_client( Client& client, IRCServer& server ) const
 {
-	if (topic.size())
-		server.send_message_to_client( client, RPL_TOPIC( client.nickname, name, topic ) );
+	server.send_message_to_client( client, RPL_TOPIC( client.nickname, name, topic ) );
 }
 
 void Channel::send_names_to_client( Client& client, IRCServer& server) const

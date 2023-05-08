@@ -212,7 +212,7 @@ void MessageParser::execJOIN( Client& client, string& line )
 		if (!chan.join_client(client)) return;
 		client.join_channel(chan);
 		chan.send_msg_to_all( CMD_CONFIRM( client.nickname, client.hostname, "JOIN", "#" + chan.name ), server );
-		chan.send_topic_to_client( client, server );
+		if (chan.topic.size()) chan.send_topic_to_client( client, server );
 		chan.send_names_to_client( client, server );
 	}
 }
