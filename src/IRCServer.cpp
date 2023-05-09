@@ -167,6 +167,7 @@ vector<pollfd>::iterator IRCServer::client_disconnect( int fd )
 	{
 		cerr << "IRCServer::client_disconnect: close() error " << strerror(errno) << endl;
 	}
+	receive_buf.erase(fd);
 	return pfds.erase(client);
 }
 
