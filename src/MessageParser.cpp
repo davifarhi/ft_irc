@@ -508,8 +508,14 @@ void MessageParser::execMODE( Client& client, string& line )
 
 void MessageParser::execKICK( Client& client, string& line )
 {
+	if (!check_registration(client)) return;
 	vector<string> words = split_line(line);
 	Channel* chann;
+	if (words.size() < 3)
+	{
+		server.send_message_to_client( client, ERR_NEEDMOREPARAMS( client.nickname, "KICK" ) );
+		return;
+	}
 	if (!server.get_channel( words[1], &chann ))
 	{
 		server.send_message_to_client( client, ERR_NOSUCHCHANNEL( client.nickname, words[1] ) );
