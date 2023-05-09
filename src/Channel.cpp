@@ -82,7 +82,7 @@ bool Channel::user_is_invited( Client & client ) const
 
 bool Channel::is_there_space_for_newuser( void ) const
 {
-	if (clients.size() < user_limit + 1)
+	if (clients.size() < user_limit)
 		return true;
 	return false;
 }
