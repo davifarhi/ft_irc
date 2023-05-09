@@ -6,12 +6,13 @@
 #    By: dfarhi <dfarhi@student.42lausanne.ch>      +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/06/22 19:19:03 by davifah           #+#    #+#              #
-#    Updated: 2023/05/01 20:16:53 by davifah          ###   ########.fr        #
+#    Updated: 2023/05/09 15:26:48 by dfarhi           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 MAIN		= src/main.o
-FILES		= $(wildcard src/*.cpp)
+FILES		= Channel.cpp Client.cpp IRCServer.cpp MessageParser.cpp main.cpp
+FILES		:= $(addprefix src/, ${FILES})
 FILES		:= $(filter-out src/main.cpp, $(FILES))
 
 OBJS		= ${FILES:.cpp=.o}
