@@ -59,6 +59,7 @@ class IRCServer
 		const int port;
 		const string pswd;
 		bool has_started;
+		bool running;
 		int sockfd;
 		vector<pollfd> pfds;
 		set<Client> clients;
@@ -78,6 +79,7 @@ class IRCServer
 
 		const string& get_pswd( void ) const;
 		bool get_has_started( void ) const;
+		void stop( void );
 
 	private:
 		bool create_socket( void );

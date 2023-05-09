@@ -16,21 +16,21 @@ IRCServer::IRCServer( int port, string pswd ) : msg_parser(*this), port(port), p
 		return;
 	cout << "Ready to start IRC server at port " << port << " with password: " << pswd << endl;
 	this->has_started = true;
+	this->running = true;
 }
 
 IRCServer::~IRCServer( void )
 {
 	while (pfds.size() > 1)
 	{
+		send_message_to_client( *clients.find(pfds.back().fd), "ERROR" );
 		client_disconnect(pfds.back().fd);
-		pfds.pop_back();
 	}
 	shutdown( sockfd, SHUT_RDWR );
 }
 
 void IRCServer::run( void )
 {
-	bool running = true;
 	pfds.push_back(pfd_construct(sockfd, POLLIN | POLLPRI, 0));
 	while (running)
 	{
@@ -71,6 +71,11 @@ const string& IRCServer::get_pswd( void ) const
 bool IRCServer::get_has_started( void ) const
 {
 	return this->has_started;
+}
+
+void IRCServer::stop( void )
+{
+	this->running = false;
 }
 
 bool IRCServer::create_socket( void )
