@@ -20,6 +20,11 @@ IRCServer::IRCServer( int port, string pswd ) : msg_parser(*this), port(port), p
 
 IRCServer::~IRCServer( void )
 {
+	while (pfds.size() > 1)
+	{
+		client_disconnect(pfds.back().fd);
+		pfds.pop_back();
+	}
 	shutdown( sockfd, SHUT_RDWR );
 }
 
