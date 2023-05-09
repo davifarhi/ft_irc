@@ -526,7 +526,7 @@ void MessageParser::execKICK( Client& client, string& line )
 		if (user->is_in_channel(chan))
 		{
 //			TODO faire attention au message envoyer 
-			chan.send_msg_to_all( CMD_CONFIRM( client.nickname, client.hostname, "KICK", "#" + chan.name ), server );
+			chan.send_msg_to_all( CMD_CONFIRM( client.nickname, client.hostname, "KICK", "#" + chan.name + " " + user->nickname ), server );
 			chan.part_client(*user);
 			user->part_channel(chan);
 		}
