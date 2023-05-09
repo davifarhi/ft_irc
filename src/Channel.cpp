@@ -45,10 +45,15 @@ void Channel::send_topic_to_client( const Client& client, IRCServer& server ) co
 		server.send_message_to_client( client, RPL_NOTOPIC( client.nickname, name ) );
 }
 
-void Channel::send_names_to_client( Client& client, IRCServer& server) const
+void Channel::send_names_to_client( Client& client, IRCServer& server)
 {
 	for (list<Client*>::const_iterator it = clients.begin(); it != clients.end(); it++)
-		server.send_message_to_client( client, RPL_NAMREPLY( client.nickname, name, (*it)->nickname ) );
+	{
+		if (get_chan_ops(const_cast<Client&>(**it)))
+			server.send_message_to_client( client, RPL_NAMREPLY( client.nickname, name, "@" + (*it)->nickname ) );
+		else
+			server.send_message_to_client( client, RPL_NAMREPLY( client.nickname, name, (*it)->nickname ) );
+	}
 	server.send_message_to_client( client, RPL_ENDOFNAMES( client.nickname, name ) );
 }
 
