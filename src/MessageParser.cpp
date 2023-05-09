@@ -429,12 +429,13 @@ void MessageParser::execMODE( Client& client, string& line )
 		if (words[2].find("+") != words[2].npos)
 		{
 			chan.change_privilege_topic(1);
-			//afficher un message 
+			chan.send_msg_to_all( CMD_CONFIRM( client.nickname, client.hostname, "MODE", "#" + chan.name + " :" + "+t" ), server ); 
 			return;
 		}
 		else
 		{
 			chan.change_privilege_topic(0);
+			chan.send_msg_to_all( CMD_CONFIRM( client.nickname, client.hostname, "MODE", "#" + chan.name + " :" + "-t" ), server );
 			return;
 		}
 	}
@@ -443,56 +444,62 @@ void MessageParser::execMODE( Client& client, string& line )
 		Client* user;
 		if (server.get_user( words[3], &user ))
 		{
-			if (!words[2].find("+"))
+			if (words[2].find("+") != words[2].npos)
 			{
 				chan.add_new_chan_ops( *user );
-//				"t'es chan_ops" peut etre ajouter message de confirmation
+				chan.send_msg_to_all( CMD_CONFIRM( client.nickname, client.hostname, "MODE", "#" + chan.name + " :" + "+o" ), server );
 				return;
 			}
 			else
 			{
 				chan.kick_user_of_chan_ops( *user );
-//				"t'es plus chan_ops"
+				chan.send_msg_to_all( CMD_CONFIRM( client.nickname, client.hostname, "MODE", "#" + chan.name + " :" + "-o" ), server );
 				return;
 			}
 		}
 	}
 	if (find_text(words[2], "+k") || find_text(words[2], "-k"))
 	{
-		if (!words[2].find("+"))
+		if (words[2].find("+") != words[2].npos)
 		{
-			chan.change_channel_keys(words[3], 1);//peut etre juste ajouter des message de confirmation
+			chan.change_channel_keys(words[3], 1);
+			chan.send_msg_to_all( CMD_CONFIRM( client.nickname, client.hostname, "MODE", "#" + chan.name + " :" + "+k" ), server );
 			return;
 		}
 		else
 		{
 			chan.change_channel_keys("", 0);
+			chan.send_msg_to_all( CMD_CONFIRM( client.nickname, client.hostname, "MODE", "#" + chan.name + " :" + "-k" ), server );
 			return;
 		}
 	}
 	if (find_text(words[2], "+i") || find_text(words[2], "-i"))
 	{
-		if (!words[2].find("+"))
+		if (words[2].find("+") != words[2].npos)
 		{
 			chan.change_status_invit_channel(true);
+			chan.send_msg_to_all( CMD_CONFIRM( client.nickname, client.hostname, "MODE", "#" + chan.name + " :" + "+i" ), server );
 			return;
 		}
 		else
 		{
 			chan.change_status_invit_channel(false);
+			chan.send_msg_to_all( CMD_CONFIRM( client.nickname, client.hostname, "MODE", "#" + chan.name + " :" + "-i" ), server );
 			return;
 		}
 	}
 	if (find_text(words[2], "+l") || find_text(words[2], "-l"))
 	{
-		if (!words[2].find("+l"))
+		if (words[2].find("+l") != words[2].npos)
 		{
-			chan.change_limit_of_channel(words[3], 1);//peut afficher la nouvelle limite de user
+			chan.change_limit_of_channel(words[3], 1);
+			chan.send_msg_to_all( CMD_CONFIRM( client.nickname, client.hostname, "MODE", "#" + chan.name + " :" + "+l" ), server );
 			return;
 		}
 		else
 		{
 			chan.change_limit_of_channel("random", 0);
+			chan.send_msg_to_all( CMD_CONFIRM( client.nickname, client.hostname, "MODE", "#" + chan.name + " :" + "-l" ), server );
 			return;
 		}
 	}
@@ -519,13 +526,13 @@ void MessageParser::execKICK( Client& client, string& line )
 		if (user->is_in_channel(chan))
 		{
 //			TODO faire attention au message envoyer 
-			chan.send_msg_to_all( CMD_CONFIRM( user->nickname, user->hostname, "KICK", "#" + chan.name ), server );
+			chan.send_msg_to_all( CMD_CONFIRM( client.nickname, client.hostname, "KICK", "#" + chan.name ), server );
 			chan.part_client(*user);
 			user->part_channel(chan);
 		}
 		else
-			cout << "pas dans le channel\n";
+			server.send_message_to_client( client, ERR_NOTONCHANNEL( user->nickname, words[1] ) );
 	}
 	else
-		cout << "user inconnue\n";
+		server.send_message_to_client( client, ERR_NOSUCHNICK( client.nickname, words[1] ) );
 }
