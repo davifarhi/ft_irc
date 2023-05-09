@@ -23,7 +23,7 @@ IRCServer::~IRCServer( void )
 {
 	while (pfds.size() > 1)
 	{
-		send_message_to_client( *clients.find(pfds.back().fd), "ERROR" );
+		send_message_to_client( *clients.find(pfds.back().fd), "ft_irc QUIT :Server stopped" );
 		client_disconnect(pfds.back().fd);
 	}
 	shutdown( sockfd, SHUT_RDWR );
