@@ -44,9 +44,6 @@ class MessageParser
 		void execINVITE( Client& client, string& line );
 		void execKICK( Client& client, string& line );
 		void execNAMES( Client& client, string& line );
-
-		//example for copy paste
-		void exec( Client& client, string& line );
 };
 
 #endif /* end of include guard: MESSAGEPARSER_H */

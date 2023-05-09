@@ -249,7 +249,6 @@ void MessageParser::execPART( Client& client, string& line )
 	else
 	{
 		chan->send_msg_to_all( CMD_CONFIRM( client.nickname, client.hostname, "PART", "#" + chan->name ), server );
-		//reference for KICK
 		chan->part_client(client);
 		client.part_channel(*chan);
 		server.delete_channel_if_empty( chan );
@@ -298,13 +297,6 @@ void MessageParser::execPRIVMSG( Client& client, string& line )
 		}
 		server.send_message_to_client( client, ERR_NOSUCHCHANNEL( client.nickname, words.back() ) );
 	}
-}
-
-// example for copy paste
-void MessageParser::exec( Client& client, string& line )
-{
-	if (!check_registration(client)) return;
-	(void) line;
 }
 
 void MessageParser::execINVITE( Client& client, string& line )
@@ -359,7 +351,6 @@ void MessageParser::execTOPIC( Client& client, string& line )
 		Channel* chan;
 		if (!server.get_channel( words[1], &chan ))
 		{
-			//TODO il n'arriver pas a trouver le channel vue qu'il est pas dans la commande (words[1])
 			server.send_message_to_client( client, ERR_NOSUCHCHANNEL( client.nickname, words[1] ) );
 		}
 		else if (!client.is_in_channel(*chan))
@@ -368,8 +359,7 @@ void MessageParser::execTOPIC( Client& client, string& line )
 		}
 		else
 		{
-			//TODO trouver le channel juste avec le client, trouver dans quel channel la commande a ete lancer
-			Channel& chan = server.get_channel(words[1]);//changer trouver le channel juste avec le client
+			Channel& chan = server.get_channel(words[1]);
 			chan.send_topic_to_client( client, server );
 			return;
 		}
@@ -521,6 +511,11 @@ void MessageParser::execKICK( Client& client, string& line )
 		server.send_message_to_client( client, ERR_NOSUCHCHANNEL( client.nickname, words[1] ) );
 		return;
 	}
+	if (!chann->client_is_in_channel(client))
+	{
+		server.send_message_to_client( client, ERR_NOTONCHANNEL( client.nickname, words[1] ) );
+		return;
+	}
 	Channel& chan = server.get_channel(words[1]);
 	if (!chan.get_chan_ops( client ))
 	{
@@ -532,13 +527,12 @@ void MessageParser::execKICK( Client& client, string& line )
 	{
 		if (user->is_in_channel(chan))
 		{
-//			TODO faire attention au message envoyer 
 			chan.send_msg_to_all( CMD_CONFIRM( client.nickname, client.hostname, "KICK", "#" + chan.name + " " + user->nickname ), server );
 			chan.part_client(*user);
 			user->part_channel(chan);
 		}
 		else
-			server.send_message_to_client( client, ERR_NOTONCHANNEL( user->nickname, words[1] ) );
+			server.send_message_to_client( client, ERR_USERNOTINCHANNEL( client.nickname, user->nickname, words[1] ) );
 	}
 	else
 		server.send_message_to_client( client, ERR_NOSUCHNICK( client.nickname, words[1] ) );

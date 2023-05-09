@@ -197,7 +197,6 @@ void IRCServer::receive_message( Client& client )
 			break;
 		for (int i = 0; i < n; i++)
 		{
-			//if (buf[i] == '\n' && (i == 0 || buf[i - 1] == '\r')) //this one ignore \n not preceded by \r
 			if (buf [i] == '\n')
 			{
 				// cleaning carriage returns in received text

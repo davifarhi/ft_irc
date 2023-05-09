@@ -1,8 +1,6 @@
 #ifndef ANSWER_HPP
 #define ANSWER_HPP
 
-//#include<>
-
 //Error reponsee
 
 #define ERR_NONICKNAMEGIVEN(source)		"431 " + source + " :No nickname given"
@@ -14,6 +12,7 @@
 
 #define ERR_NOSUCHCHANNEL(client, channel)	"403 " + client + " " + channel + " :No such channel"
 #define ERR_NOTONCHANNEL(client, channel)	"442 " + client + " " + channel + " :You're not on that channel"
+#define ERR_USERNOTINCHANNEL(client, nick, channel)	"441 " + client + " " + nick + " " + channel + " :They aren't on that channel"
 #define ERR_BADCHANNELKEY(client, channel)	"475 " + client + " " + channel + " :Cannot join channel (+k)"
 #define ERR_INVITEONLYCHAN(client, channel)	"473 " + client + " " + channel + " :Cannot join channel (+i)"
 #define ERR_CHANNELISFULL(client, channel)	"471 " + client + " " + channel + " :Cannot join channel (+l)"
@@ -44,5 +43,3 @@
 #define PRIVMSG_CHAN(nick, host, channel, message)	":" + nick + "@" + host + " PRIVMSG #" + channel + " :" + message
 
 #endif
-
-//!source = client
