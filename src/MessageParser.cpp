@@ -24,6 +24,7 @@ void MessageParser::init( void )
 	cmd_list.push_back(client_cmd( string("MODE"), &MessageParser::execMODE ));
 	cmd_list.push_back(client_cmd( string("INVITE"), &MessageParser::execINVITE ));
 	cmd_list.push_back(client_cmd( string("KICK"), &MessageParser::execKICK ));
+	cmd_list.push_back(client_cmd( string("NAMES"), &MessageParser::execNAMES ));
 }
 
 void MessageParser::parse( Client& client, string& line )
@@ -535,4 +536,27 @@ void MessageParser::execKICK( Client& client, string& line )
 	}
 	else
 		server.send_message_to_client( client, ERR_NOSUCHNICK( client.nickname, words[1] ) );
+}
+
+void MessageParser::execNAMES( Client& client, string& line )
+{
+	if (!check_registration(client)) return;
+	vector<string> words = split_line(line);
+	Channel *chan;
+	if (words.size() < 2)
+	{
+		server.send_message_to_client( client, ERR_NEEDMOREPARAMS( client.nickname, "NAMES" ) );
+	}
+	else if (!server.get_channel( words[1], &chan ))
+	{
+		server.send_message_to_client( client, ERR_NOSUCHCHANNEL( client.nickname, words[1] ) );
+	}
+	else if (!chan->client_is_in_channel(client))
+	{
+		server.send_message_to_client( client, ERR_NOTONCHANNEL( client.nickname, words[1] ) );
+	}
+	else
+	{
+		chan->send_names_to_client( client, server );
+	}
 }
