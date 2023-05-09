@@ -454,7 +454,7 @@ void MessageParser::execMODE( Client& client, string& line )
 			else
 			{
 				chan.kick_user_of_chan_ops( *user );
-				chan.send_msg_to_all( CMD_CONFIRM( client.nickname, client.hostname, "MODE", "#" + chan.name + " +o " + user->nickname ), server );
+				chan.send_msg_to_all( CMD_CONFIRM( client.nickname, client.hostname, "MODE", "#" + chan.name + " -o " + user->nickname ), server );
 				return;
 			}
 		}

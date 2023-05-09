@@ -35,5 +35,6 @@ int main( int ac, char **av )
 	g_server = &serv;
 	signal( SIGINT, &irc_sigint_handler );
 	serv.run();
+	//system("leaks ircserv");
 	return 0;
 }

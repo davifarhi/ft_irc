@@ -27,6 +27,7 @@ IRCServer::~IRCServer( void )
 		client_disconnect(pfds.back().fd);
 	}
 	shutdown( sockfd, SHUT_RDWR );
+	close(sockfd);
 }
 
 void IRCServer::run( void )
